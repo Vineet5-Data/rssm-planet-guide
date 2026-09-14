@@ -1,228 +1,2852 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RSSM and PlaNet — an illustrated explanation</title>
-<style>
-:root{--ink:#172f3a;--muted:#516773;--blue:#2165ad;--bluewash:#edf5ff;--green:#08786d;--greenwash:#eaf8f4;--gold:#98680d;--line:#d5e2e6;--paper:#fff;--bg:#f5f8f8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:1160px;margin:auto;padding:54px 28px 72px}h1{font-size:clamp(34px,5vw,58px);line-height:1.08;letter-spacing:-2px;max-width:920px;margin:10px 0 20px}h2{font-size:29px;line-height:1.3;letter-spacing:-.6px;margin:0 0 18px}h3{font-size:21px;line-height:1.4;margin:25px 0 8px}p{margin:0 0 16px}a{color:var(--blue);text-underline-offset:3px}strong{font-weight:700}.eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:12px;font-weight:750;color:var(--green)}.intro{font-size:21px;max-width:930px}.lead{font-size:19px}.small,figcaption{font-size:14px;color:var(--muted)}.section{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:30px;margin:24px 0}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}.summary div{padding:20px;border-radius:13px;background:var(--paper);border:1px solid var(--line)}.summary b{display:block;color:var(--green);font-size:21px}.summary span{font-size:16px}.nav{display:flex;flex-wrap:wrap;gap:10px 20px;font-size:15px;margin:25px 0}.nav a{text-decoration:none;border-bottom:1px solid var(--line)}.callout{background:var(--greenwash);border-left:4px solid var(--green);padding:17px 20px;border-radius:0 10px 10px 0;margin:20px 0}.note{background:#fff8e8;border-left-color:#bb8823}.source{font-size:13px;color:var(--muted);margin-top:18px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:15px}th,td{text-align:left;vertical-align:top;padding:14px 12px;border-bottom:1px solid var(--line)}th{background:#f3f7f8}td:first-child{font-weight:650;width:20%}td small{font-weight:400;display:block;color:var(--muted)}.formula{font-family:"Cambria Math","Segoe UI",serif;background:#f5f8fa;border-radius:8px;padding:12px 18px;overflow:auto;font-size:19px}.cols{display:grid;grid-template-columns:1fr 1fr;gap:26px}.step{display:grid;grid-template-columns:38px 1fr;gap:12px;margin:18px 0}.step-number{height:31px;width:31px;border-radius:50%;background:var(--bluewash);color:var(--blue);display:grid;place-items:center;font-weight:750;font-size:15px}.step p{margin:0}.crop{aspect-ratio:4.24;overflow:hidden;background:#111;border-radius:10px}.crop img{width:100%;height:auto;display:block}.reference-zoom{overflow-x:auto}.reference-zoom .crop{min-width:780px}figure{margin:18px 0}figcaption{margin-top:10px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:17px 0}button{font:inherit;cursor:pointer;border:1px solid #b7cbd3;border-radius:9px;padding:9px 15px;background:white;color:var(--ink);font-size:15px}button:hover{background:#f0f6f9}button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:white}button:focus-visible,svg [role=button]:focus-visible,a:focus-visible{outline:3px solid #e9a51c;outline-offset:4px}#mode-note{padding:12px 16px;background:var(--bluewash);border-radius:9px;font-size:15px;min-height:70px}.diagram-scroll{overflow-x:auto;margin:8px -8px}.diagram-scroll svg{min-width:780px;width:100%;height:auto;display:block}svg text{font-family:system-ui,"Segoe UI",sans-serif;fill:var(--ink)}svg .title{font-size:18px;font-weight:700}svg .detail{font-size:15px}svg .tiny{font-size:13px;fill:var(--muted)}svg rect.node{fill:var(--bluewash);stroke:#82a9c9;stroke-width:1.5}svg .prior rect{fill:var(--greenwash);stroke:#6fac9c}svg .head rect{fill:#f4f7f8;stroke:#9db6bf}svg .edge{fill:none;stroke:#526d7b;stroke-width:2.2}svg .sample-prior{stroke:var(--green)}svg .sample-posterior{stroke:var(--blue)}svg .kl{stroke:#b48738;stroke-width:2;stroke-dasharray:5 5;fill:none}svg .selected rect{stroke:#e29c17;stroke-width:3.8}svg [role=button]{cursor:pointer}svg [role=button]:hover rect{stroke-width:3}svg .sample-prior{opacity:.18}#rssm-diagram.imagining .observe-only{opacity:.16}#rssm-diagram.imagining .sample-prior{opacity:1}#rssm-diagram.imagining .sample-posterior{opacity:.13}#rssm-diagram.imagining .decoder-line{opacity:.2}.module-buttons{display:flex;flex-wrap:wrap;gap:7px}.module-buttons button{font-size:13px;padding:7px 11px}.explanation{border:1px solid var(--line);border-radius:12px;background:#fafcfc;padding:19px 22px;margin-top:14px;min-height:155px}.explanation h3{margin:0 0 7px}.explanation p{margin:0;font-size:16px}.paper-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.paper-grid article{padding:20px;border:1px solid var(--line);border-radius:12px}.paper-grid h3{margin-top:0}.paper-grid p:last-child{margin-bottom:0}li{margin-bottom:8px}.plain-flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:16px;margin:20px 0}.plain-flow b{border:1px solid var(--line);border-radius:8px;padding:10px 13px;background:#f7fafb}.print-button{font-size:13px}.footer{color:var(--muted);font-size:14px;margin-top:28px}
-@media(max-width:750px){main{padding:30px 15px}.section{padding:21px 17px;border-radius:13px}.summary,.cols,.paper-grid{grid-template-columns:1fr}.summary{gap:9px}.summary div{padding:14px 17px}h2{font-size:25px}.intro{font-size:19px}.reference-zoom .crop{min-width:900px}th,td{padding:10px 8px}body{font-size:16px}}
-@media print{body{background:white;font-size:11pt}main{max-width:none;padding:0}.toolbar,.module-buttons,.nav,.print-button{display:none}.section{break-inside:avoid;border-radius:0;padding:14px;margin:14px 0}.diagram-scroll svg{min-width:0}.explanation{min-height:0}.crop{min-width:0!important}.summary{grid-template-columns:repeat(3,1fr)}h1{font-size:34pt}.source a{color:inherit}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaEvolve: Latent World Models for Fleet Map Matching & Path Prediction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&family=STIX+Two+Math&display=swap" rel="stylesheet">
+  <!-- KaTeX for Rich Mathematical Notation -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg-base: #070a13;
+      --bg-surface: #0e1526;
+      --bg-card: rgba(17, 26, 47, 0.75);
+      --bg-card-hover: rgba(26, 38, 66, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(99, 102, 241, 0.35);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-purple: #a855f7;
+      --glow-indigo: 0 0 35px rgba(99, 102, 241, 0.25);
+      --glow-cyan: 0 0 35px rgba(6, 182, 212, 0.25);
+      --glow-emerald: 0 0 35px rgba(16, 185, 129, 0.25);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.65;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 65%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 90%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Top Navigation - Ultra Modern Glass Dock */
+    header.top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(7, 10, 19, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+      transition: transform 0.2s ease;
+    }
+
+    .nav-brand:hover {
+      transform: translateY(-1px);
+    }
+
+    .nav-brand-badge {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-brand-text {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      background: linear-gradient(90deg, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.01em;
+    }
+
+    /* Modern Glass Floating Pill Dock */
+    .nav-links-wrapper {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 0.35rem 0.45rem;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 
+        inset 0 1px 1px rgba(255, 255, 255, 0.12),
+        0 8px 24px -4px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      max-width: 100%;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      list-style: none;
+      overflow-x: auto;
+      padding: 0;
+      margin: 0;
+      scrollbar-width: none;
+    }
+
+    .nav-links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.835rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 0.45rem 0.95rem;
+      border-radius: 9999px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      position: relative;
+    }
+
+    .nav-links a .nav-icon {
+      font-size: 0.95rem;
+      filter: grayscale(0.2);
+      transition: transform 0.25s ease, filter 0.25s ease;
+    }
+
+    .nav-links a:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .nav-links a:hover .nav-icon {
+      transform: scale(1.15);
+      filter: grayscale(0);
+    }
+
+    .nav-links a.active {
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(6, 182, 212, 0.95));
+      box-shadow: 
+        0 2px 14px rgba(99, 102, 241, 0.45),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      font-weight: 700;
+    }
+
+    .nav-links a.active .nav-icon {
+      transform: scale(1.1);
+      filter: grayscale(0) drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+    }
+
+    .nav-links a.nav-planet-link {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+    }
+
+    .nav-links a.nav-planet-link:hover {
+      background: rgba(245, 158, 11, 0.25);
+      border-color: rgba(245, 158, 11, 0.6);
+      color: #ffffff;
+    }
+
+    .nav-links a.nav-repo-link {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #e2e8f0;
+    }
+
+    .nav-links a.nav-repo-link:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.5);
+      color: #ffffff;
+    }
+
+    .nav-action {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-emerald);
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 10px var(--accent-emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    /* Container Layout */
+    .page-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 5rem;
+    }
+
+    /* Hero Section */
+    .hero-banner {
+      background: linear-gradient(180deg, rgba(14, 21, 38, 0.9) 0%, rgba(9, 13, 24, 0.6) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 3.5rem 3rem;
+      margin-bottom: 3.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .pill-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .pill-tag.accent {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+    }
+
+    .pill-tag.cyan {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #67e8f9;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 70%, #64748b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 900px;
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    .hero-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .metric-card {
+      background: rgba(11, 17, 33, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-accent);
+      background: rgba(17, 26, 50, 0.8);
+    }
+
+    .metric-card .accent-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+    }
+
+    .metric-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 0.35rem;
+      color: #fff;
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-sub {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+    }
+
+    /* Section Headers */
+    .section-title-wrap {
+      margin-bottom: 2.25rem;
+      position: relative;
+    }
+
+    .section-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent-indigo);
+      margin-bottom: 0.35rem;
+      display: block;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-lead {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 850px;
+      margin-top: 0.5rem;
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: var(--bg-card-hover);
+    }
+
+    /* Tab controls */
+    .tab-bar {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: var(--accent-indigo);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Architecture Grid */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .pillar-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .pillar-num {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 3.5rem;
+      line-height: 1;
+      opacity: 0.06;
+      user-select: none;
+    }
+
+    .pillar-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .pillar-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .pillar-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .pillar-tech {
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pillar-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .pillar-feature-list {
+      list-style: none;
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .pillar-feature-list li {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .pillar-feature-list li svg {
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+      color: var(--accent-emerald);
+    }
+
+    /* Workflow Diagram SVG Container */
+    .diagram-wrapper {
+      background: #090d1a;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 1.5rem;
+      margin-bottom: 3.5rem;
+      overflow-x: auto;
+      box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Interactive Simulator */
+    .sim-container {
+      background: linear-gradient(145deg, #0b1122 0%, #0d152a 100%);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem;
+      margin-bottom: 3.5rem;
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.1);
+    }
+
+    .sim-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .sim-btn {
+      background: linear-gradient(135deg, var(--accent-indigo), #4f46e5);
+      color: #fff;
+      border: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    }
+
+    .sim-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.5);
+    }
+
+    .sim-btn.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .sim-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .sim-toggle {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.2rem;
+    }
+
+    .sim-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sim-toggle-btn.active {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .sim-visual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 950px) {
+      .sim-visual-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sim-panel {
+      background: rgba(7, 10, 19, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+
+    .sim-panel-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .latent-grid-view {
+      display: grid;
+      grid-template-columns: repeat(32, 1fr);
+      gap: 2px;
+      aspect-ratio: 1 / 1;
+      max-width: 320px;
+      margin: 0 auto 1rem;
+      background: #000;
+      padding: 4px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .latent-cell {
+      aspect-ratio: 1 / 1;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 1px;
+      transition: background 0.15s ease;
+    }
+
+    .latent-cell.active {
+      background: var(--accent-cyan);
+      box-shadow: 0 0 6px var(--accent-cyan);
+    }
+
+    .latent-cell.prior {
+      background: var(--accent-purple);
+      box-shadow: 0 0 6px var(--accent-purple);
+    }
+
+    .h-vector-strip {
+      height: 18px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981, #f59e0b, #6366f1);
+      background-size: 200% 100%;
+      animation: gradientShift 6s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .sim-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .stat-box-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stat-box-lbl {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 0.2rem;
+    }
+
+    /* Candidate Road Visualizer */
+    .road-candidate-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .road-candidate-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.9rem;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .road-candidate-item.winner {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #fff;
+    }
+
+    .prob-bar-container {
+      width: 120px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0 0.75rem;
+    }
+
+    .prob-bar-fill {
+      height: 100%;
+      background: var(--accent-indigo);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .road-candidate-item.winner .prob-bar-fill {
+      background: var(--accent-emerald);
+    }
+
+    /* Comparison Table */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 2.5rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+    }
+
+    table.custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    table.custom-table th {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    table.custom-table td {
+      padding: 1.1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+      vertical-align: top;
+    }
+
+    table.custom-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.custom-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tag-cell {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+    }
+
+    /* Concept & Theory Cards */
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .math-formula-box {
+      background: rgba(9, 14, 28, 0.85);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-left: 4px solid var(--accent-cyan);
+      border-radius: var(--radius-sm);
+      padding: 1.1rem 1.4rem;
+      margin: 1rem 0;
+      color: #f1f5f9;
+      overflow-x: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .math-formula-box:hover {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.18);
+    }
+
+    /* KaTeX Mathematical Styling */
+    .katex {
+      font-size: 1.05em;
+      text-rendering: geometricPrecision;
+      color: #f8fafc;
+    }
+    .katex-display {
+      margin: 0.75rem 0 !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0.25rem 0;
+    }
+    .katex-display > .katex {
+      font-size: 1.15em;
+      color: #e0e7ff;
+    }
+
+    /* Semantic Math Fallback Typography (when KaTeX is offline) */
+    .math-inline-render, .math-display-render {
+      font-family: 'KaTeX_Main', 'STIX Two Math', 'Cambria Math', 'Latin Modern Math', 'Times New Roman', serif;
+      letter-spacing: 0.01em;
+      color: #f1f5f9;
+    }
+    .math-inline-render {
+      display: inline-block;
+      padding: 0 0.15rem;
+      font-size: 1.05em;
+    }
+    .math-inline-render var, .math-display-render var {
+      font-style: italic;
+      font-family: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      padding: 0 1px;
+    }
+    .math-inline-render .math-op, .math-display-render .math-op {
+      font-style: normal;
+      font-weight: 600;
+      color: #67e8f9;
+      padding: 0 0.2rem;
+    }
+    .math-inline-render .math-rel, .math-display-render .math-rel {
+      padding: 0 0.3rem;
+      color: #a5b4fc;
+    }
+    .math-display-render {
+      display: block;
+      text-align: center;
+      font-size: 1.15rem;
+      padding: 0.5rem 0;
+      line-height: 1.8;
+      color: #e0e7ff;
+    }
+    .math-frac {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: -0.65em;
+      padding: 0 0.25rem;
+      text-align: center;
+      font-size: 0.9em;
+    }
+    .math-frac-num {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+      padding-bottom: 1px;
+    }
+    .math-frac-den {
+      padding-top: 1px;
+    }
+    .math-sub {
+      font-size: 0.75em;
+      vertical-align: -0.25em;
+      line-height: 0;
+    }
+    .math-sup {
+      font-size: 0.75em;
+      vertical-align: 0.45em;
+      line-height: 0;
+    }
+    .math-bb {
+      font-weight: 600;
+      font-family: 'KaTeX_AMS', 'STIX Two Math', serif;
+      color: #c7d2fe;
+    }
+    .math-cal {
+      font-family: 'KaTeX_Caligraphic', 'STIX Two Math', cursive, serif;
+      font-style: italic;
+      color: #f472b6;
+    }
+    .math-accent {
+      position: relative;
+      display: inline-block;
+      line-height: 1;
+    }
+
+    /* File Explorer */
+    .explorer-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-md);
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex-grow: 1;
+      max-width: 450px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(7, 10, 19, 0.75);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem 1rem 0.6rem 2.5rem;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-indigo);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .filter-tags {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+
+    .filter-btn.active {
+      background: var(--accent-indigo);
+      border-color: var(--accent-indigo);
+      color: #fff;
+    }
+
+    .file-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .file-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .file-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s ease;
+    }
+
+    .file-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .file-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .file-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      word-break: break-all;
+    }
+
+    .file-category-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .cat-core { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); }
+    .cat-model { background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .cat-train { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .cat-data { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .cat-hmm { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .cat-eval { background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .cat-doc { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); }
+
+    .file-eli5 {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .file-tech-details {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: auto;
+      border-left: 2px solid var(--accent-indigo);
+    }
+
+    .file-tech-details p {
+      margin-bottom: 0.35rem;
+    }
+
+    .file-tech-details p:last-child {
+      margin-bottom: 0;
+    }
+
+    .file-gotcha {
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+      color: var(--accent-amber);
+      font-size: 0.77rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    /* Timeline Section */
+    .timeline-wrap {
+      position: relative;
+      margin-left: 1.5rem;
+      padding-left: 2rem;
+      border-left: 2px solid var(--border-subtle);
+      margin-bottom: 3.5rem;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2.25rem;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -2.6rem;
+      top: 0.2rem;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--bg-base);
+      border: 3px solid var(--accent-indigo);
+    }
+
+    .timeline-dot.danger { border-color: var(--accent-rose); }
+    .timeline-dot.success { border-color: var(--accent-emerald); }
+    .timeline-dot.warning { border-color: var(--accent-amber); }
+
+    .timeline-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .timeline-date {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Footer */
+    footer.page-footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 3rem 2rem;
+      background: #050811;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    footer.page-footer a {
+      color: var(--accent-indigo);
+      text-decoration: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .page-container { padding: 1.5rem 1rem; }
+      .hero-banner { padding: 2rem 1.5rem; }
+      header.top-nav { padding: 0.75rem 1rem; }
+    }
+  </style>
 </head>
 <body>
-<main>
-<header>
-<div class="eyebrow">A beginner’s guide · based on Hafner et al.</div>
-<h1>RSSM predicts the world.<br>PlaNet uses it to choose actions.</h1>
-<p class="intro">The “transition model,” “observation model,” and “reward model” are learned parts with different jobs. Together, they let an agent build a small internal simulator from experience.</p>
-<div class="summary">
-<div><b>Transition</b><span>What could happen next if I take this action?</span></div>
-<div><b>Observation</b><span>What would that internal state look like as an image?</span></div>
-<div><b>Reward</b><span>What task score should I expect in that state?</span></div>
-</div>
-<nav class="nav" aria-label="Guide contents">
-<a href="#picture">Your picture</a><a href="#state">What is a state?</a><a href="#diagram">Explore RSSM</a><a href="#terms">Model names</a><a href="#learning">How it learns</a><a href="#planning">How it acts</a><a href="#paper">The whole paper</a>
-</nav>
-</header>
 
-<section class="section" id="picture">
-<h2>First, map your picture to the paper</h2>
-<p>The upper <strong>World Model Training</strong> section in your image is a useful guide. Its repeated columns show the <strong>same networks applied at successive time steps</strong>, with shared learned parameters.</p>
-<figure>
-<div class="reference-zoom"><div class="crop"><img src="natural-dreamer-reference.png" alt="The upper world-model section of the user's Dreamer training diagram. It shows a recurrent model, prior net, posterior net, encoder, reward model, continuation model, and decoder repeated over time."></div></div>
-<figcaption>Upper section of your supplied image, displayed with the lower section hidden. <a href="natural-dreamer-reference.png">Open the full original image</a> to zoom in.</figcaption>
-</figure>
-<div class="callout note"><strong>Two adjustments for the original PlaNet paper:</strong> ignore the “continue model” when reading this as PlaNet; it belongs to the later Dreamer world-model setup. Also, “full state” means recurrent memory plus <em>one sampled stochastic state</em>—it does not mean concatenating both the prior and posterior. The actor and critic below are part of the later Dreamer agent.</div>
-<p class="source">Sources: <a href="https://arxiv.org/pdf/1811.04551#page=4">PlaNet §3, Eq. 4</a>; <a href="https://arxiv.org/html/2301.04104v2">DreamerV3, world model learning</a>.</p>
-</section>
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <a href="#hero" class="nav-brand">
+      <div class="nav-brand-badge">α</div>
+      <span class="nav-brand-text">DreamerV3 in AD</span>
+    </a>
+    <nav class="nav-links-wrapper">
+      <ul class="nav-links" id="mainNav">
+        <li><a href="#overview" class="active"><span class="nav-icon">🗺️</span>Overview</a></li>
+        <li><a href="#pillars"><span class="nav-icon">🏛️</span>Four Pillars</a></li>
+        <li><a href="#dreamer-rssm"><span class="nav-icon">🧠</span>DreamerV3 &amp; RSSM</a></li>
+        <li><a href="#simulator"><span class="nav-icon">⚡</span>RSSM Simulator</a></li>
+        <li><a href="#concepts"><span class="nav-icon">📐</span>Concepts Ladder</a></li>
+        <li><a href="#file-explorer"><span class="nav-icon">📂</span>File Catalog</a></li>
+        <li><a href="#experiments"><span class="nav-icon">🔬</span>Research Drama</a></li>
+        <li><a href="#papers"><span class="nav-icon">📜</span>Literature</a></li>
+        <li><a href="planet.html" class="nav-planet-link"><span class="nav-icon">🪐</span>PlaNet Guide</a></li>
+        <li><a href="https://github.com/Vineet5-Data/RL_in_AD" target="_blank" rel="noopener" class="nav-repo-link"><span class="nav-icon">🐙</span>Code Repo</a></li>
+      </ul>
+    </nav>
+  </header>
 
-<section class="section" id="state">
-<h2>What is the model trying to remember?</h2>
-<p>Imagine controlling a cart with a pole attached. You want to swing the pole upright and balance it. Your input is a camera image; your action moves the cart left or right.</p>
-<p>One image tells you where the pole appears to be, but may not tell you whether it is moving left or right. The agent needs a memory of earlier images and actions.</p>
-<div class="cols">
-<div><h3>Memory: h</h3><p>The recurrent network carries useful information forward through time. For the same inputs and parameters, its update is deterministic. It is a learned memory—not a guarantee that every past detail is preserved.</p></div>
-<div><h3>Stochastic state: z</h3><p>A sample from a learned distribution represents the current situation and uncertainty about it. It allows different possible futures. It is more than arbitrary noise added to the system.</p></div>
-</div>
-<p class="formula">Full latent state = (h, z)</p>
-<p><strong>Latent</strong> means these are internal learned numbers, not raw pixels. Some may encode information useful for position or motion, but they do not come with human-readable labels such as “pole speed.”</p>
-<p class="small">Notation: this guide uses z for the stochastic component to match Dreamer terminology. In the RSSM equations of the PlaNet paper, that component is called s. Thus our (h, z) corresponds to the paper’s (h, s). A subscript t means the current time step.</p>
-</section>
+  <div class="page-container">
 
-<section class="section" id="diagram">
-<h2>Follow one RSSM step</h2>
-<p>Select a mode, then select a box to see its role. <strong>Observing</strong> uses the real image to estimate the current state. <strong>Imagining</strong> predicts a future state without a new image.</p>
-<div class="toolbar" aria-label="RSSM mode">
-<button type="button" id="observe-button" aria-pressed="true">Observe a real image</button>
-<button type="button" id="imagine-button" aria-pressed="false">Imagine the next step</button>
-</div>
-<div id="mode-note" role="status" aria-live="polite">With a real image, sample z from the posterior q. The prior p is also computed during training and compared with the posterior through KL divergence.</div>
-<div class="diagram-scroll">
-<svg id="rssm-diagram" viewBox="0 0 1100 535" aria-label="Interactive RSSM diagram showing memory, prior, posterior, observation encoding, full latent state, and prediction heads.">
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#526d7b"/></marker></defs>
-<path class="edge" d="M205 255 H245" marker-end="url(#arrow)"/>
-<path class="edge" d="M450 255 H485 V114 H535" marker-end="url(#arrow)"/>
-<path class="edge observe-only" d="M450 255 H485 V374 H535" marker-end="url(#arrow)"/>
-<path class="edge observe-only" d="M450 413 H535" marker-end="url(#arrow)"/>
-<path class="edge" d="M347 210 V30 H970 V210" marker-end="url(#arrow)"/>
-<text x="646" y="21" text-anchor="middle" class="tiny">Memory h also enters the full state</text>
-<path class="edge sample-prior" d="M760 114 H816 V237 H865" marker-end="url(#arrow)"/>
-<path class="edge sample-posterior" d="M760 400 H816 V273 H865" marker-end="url(#arrow)"/>
-<text x="796" y="178" class="tiny sample-prior" text-anchor="middle">sample p</text>
-<text x="797" y="329" class="tiny sample-posterior" text-anchor="middle">sample q</text>
-<path class="kl observe-only" d="M647 158 V219 M647 278 V350"/>
-<text x="647" y="243" class="tiny observe-only" text-anchor="middle">KL compares q and p</text>
-<text x="647" y="263" class="tiny observe-only" text-anchor="middle">(training only)</text>
-<path class="edge" d="M970 300 V377" marker-end="url(#arrow)"/>
+    <!-- Hero Banner -->
+    <section id="hero" class="hero-banner">
+      <div class="hero-badge-row">
+        <span class="pill-tag accent">Label-Free Reinforcement Learning</span>
+        <span class="pill-tag cyan">Recurrent State-Space World Models (RSSM)</span>
+        <span class="pill-tag">DreamerV3 Lineage</span>
+        <span class="pill-tag">Porto (1.66M Trajectories / 82M Fixes)</span>
+      </div>
+      <h1 class="hero-title">Self-Supervised World Models & Geometric Hybrids for Autonomous Navigation</h1>
+      <p class="hero-desc">
+        A comprehensive, end-to-end breakdown of the AlphaEvolve map-matching and path-prediction system. Learn how Recurrent State-Space Models (RSSMs) from DreamerV3 were adapted to vectorized street networks, why faithful reconstruction collapsed, and how combining deep generative dynamics with classical geometry achieved an unprecedented <strong>86.8% accuracy</strong> without a single human label.
+      </p>
 
-<g data-module="transition" role="button" tabindex="0" aria-label="Previous state and action, input to the transition model">
-<rect class="node" x="20" y="210" width="185" height="90" rx="10"/>
-<text x="112" y="243" class="title" text-anchor="middle">Previous state</text>
-<text x="112" y="269" class="detail" text-anchor="middle">+ previous action</text></g>
+      <div class="hero-metrics-grid">
+        <div class="metric-card">
+          <div class="accent-bar" style="background: var(--accent-emerald);"></div>
+          <div class="metric-val" style="color: var(--accent-emerald);">86.8%</div>
+          <div class="metric-label">Offline Map Matching</div>
+          <div class="metric-sub">Hybrid Viterbi (Porto held-out n=500)</div>
+        </div>
 
-<g data-module="memory" role="button" tabindex="0" aria-label="Recurrent model updates deterministic memory">
-<rect class="node" x="245" y="210" width="205" height="90" rx="10"/>
-<text x="347" y="242" class="title" text-anchor="middle">Recurrent model</text>
-<text x="347" y="271" class="detail" text-anchor="middle">Update memory h</text></g>
+        <div class="metric-card">
+          <div class="accent-bar" style="background: var(--accent-cyan);"></div>
+          <div class="metric-val" style="color: var(--accent-cyan);">82.9%</div>
+          <div class="metric-label">Online Streaming Match</div>
+          <div class="metric-sub">hyb+topo closed-loop (Zero lookahead)</div>
+        </div>
 
-<g class="prior" data-module="prior" role="button" tabindex="0" aria-label="Prior predicts stochastic state without a new image">
-<rect class="node" x="535" y="70" width="225" height="88" rx="10"/>
-<text x="647" y="102" class="title" text-anchor="middle">Prior net</text>
-<text x="647" y="129" class="detail" text-anchor="middle">p(z | h): predict</text></g>
+        <div class="metric-card">
+          <div class="accent-bar" style="background: var(--accent-indigo);"></div>
+          <div class="metric-val" style="color: var(--accent-indigo);">4.71%</div>
+          <div class="metric-label">Disconnected Jumps</div>
+          <div class="metric-sub">Cut by ~20% via DAgger HMM Relabeling</div>
+        </div>
 
-<g class="observe-only" data-module="posterior" role="button" tabindex="0" aria-label="Posterior estimates the stochastic state from memory and current image">
-<rect class="node" x="535" y="350" width="225" height="100" rx="10"/>
-<text x="647" y="382" class="title" text-anchor="middle">Posterior net</text>
-<text x="647" y="411" class="detail" text-anchor="middle">q(z | h, image): infer</text>
-<text x="647" y="435" class="tiny" text-anchor="middle">Uses the real observation</text></g>
+        <div class="metric-card">
+          <div class="accent-bar" style="background: var(--accent-purple);"></div>
+          <div class="metric-val" style="color: var(--accent-purple);">+2.0 pp</div>
+          <div class="metric-label">Per Data Doubling</div>
+          <div class="metric-sub">Neural scaling (200k &rarr; 400k &rarr; 800k &rarr; 1.66M)</div>
+        </div>
 
-<g class="observe-only" data-module="encoder" role="button" tabindex="0" aria-label="Encoder extracts features from the real image">
-<rect class="node" x="245" y="380" width="205" height="66" rx="10"/>
-<text x="347" y="407" class="title" text-anchor="middle">Image → Encoder</text>
-<text x="347" y="430" class="tiny" text-anchor="middle">Extract visual features</text></g>
+        <div class="metric-card">
+          <div class="accent-bar" style="background: var(--accent-amber);"></div>
+          <div class="metric-val" style="color: var(--accent-amber);">4.77 M</div>
+          <div class="metric-label">Model Parameters</div>
+          <div class="metric-sub">Decoder-Light RSSM (32×32 Categorical)</div>
+        </div>
+      </div>
+    </section>
 
-<g data-module="state" role="button" tabindex="0" aria-label="Full latent state contains memory and one stochastic sample">
-<rect class="node" x="865" y="210" width="210" height="90" rx="10"/>
-<text x="970" y="241" class="title" text-anchor="middle">Full state: (h, z)</text>
-<text id="state-source" x="970" y="270" class="detail" text-anchor="middle">z sampled from q</text></g>
+    <!-- Overview Section: The Two Problems -->
+    <section id="overview" style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">The Core Mission</span>
+        <h2 class="section-title">What Problems Does This Project Solve?</h2>
+        <p class="section-lead">
+          Vehicle fleets (delivery vans, taxis, autonomous cars) rely on GPS data for dispatch and routing. But real-world GPS is notoriously noisy, drifting into buildings or jumping across parallel streets.
+        </p>
+      </div>
 
-<g class="head" data-module="heads" role="button" tabindex="0" aria-label="Prediction heads decode an image and predict reward from the full state">
-<rect class="node" x="865" y="377" width="210" height="112" rx="10"/>
-<text x="970" y="407" class="title" text-anchor="middle">Prediction heads</text>
-<text x="970" y="438" class="detail decoder-line" text-anchor="middle">Decoder → image</text>
-<text x="970" y="466" class="detail" text-anchor="middle">Reward model → score</text></g>
-<text x="20" y="507" class="tiny">Recurrent model + prior net = the generative transition.</text>
-<text x="20" y="526" class="tiny">Repeat these same networks at each time step; parameters are shared.</text>
-</svg>
-</div>
-<div class="module-buttons" aria-label="Explain a model component">
-<button type="button" data-module-button="transition" aria-pressed="true">Transition</button>
-<button type="button" data-module-button="memory" aria-pressed="false">Memory</button>
-<button type="button" data-module-button="prior" aria-pressed="false">Prior</button>
-<button type="button" data-module-button="encoder" aria-pressed="false">Encoder</button>
-<button type="button" data-module-button="posterior" aria-pressed="false">Posterior</button>
-<button type="button" data-module-button="state" aria-pressed="false">Full state</button>
-<button type="button" data-module-button="heads" aria-pressed="false">Prediction heads</button>
-</div>
-<div class="explanation" aria-live="polite"><h3 id="module-title">Transition: the internal simulator</h3><p id="module-text">In RSSM, the transition has two parts: the recurrent model updates memory from the previous memory, stochastic state, and action; the prior net predicts a distribution over the new stochastic state. Together they describe what might happen after an action.</p></div>
-<p class="source">Simplified from <a href="https://arxiv.org/pdf/1811.04551#page=4">PlaNet §3, Eq. 4</a>. KL is a training comparison, not a forward data-flow connection between the two networks.</p>
-</section>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        <div class="glass-card">
+          <div style="font-size: 2rem; margin-bottom: 0.75rem;">🗺️</div>
+          <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: #fff;">1. Map Matching (History)</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+            Taking raw, noisy $(\mathrm{lat}, \mathrm{lon}, t)$ GPS traces and deducing the <strong>exact sequence of road segments</strong> the vehicle physically traversed on the OpenStreetMap road graph.
+          </p>
+          <div class="math-formula-box" style="margin-top: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+            <div style="color: var(--accent-cyan); font-weight: 600; margin-bottom: 0.3rem;">// Observation Input:</div>
+            <code style="color: #cbd5e1;">[(41.157, -8.629, t₀), (41.158, -8.630, t₁), …]</code>
+            <div style="color: var(--accent-emerald); font-weight: 600; margin: 0.4rem 0 0.3rem 0;">// Matched Graph Trajectory:</div>
+            <code style="color: #6ee7b7;">[RoadSeg #14892 &rarr; RoadSeg #14893 &rarr; RoadSeg #15102]</code>
+          </div>
+        </div>
 
-<section class="section" id="terms">
-<h2>What each “model” means</h2>
-<p>A model here is a learned mathematical mapping, usually implemented by a neural network. It produces a prediction or the parameters of a probability distribution. These components cooperate and are trained together.</p>
-<div class="table-wrap"><table>
-<thead><tr><th>Paper term</th><th>Label in your image</th><th>Input → output</th><th>Cart-and-pole example</th></tr></thead>
-<tbody>
-<tr><td>Transition model<small>Generative dynamics</small></td><td>Recurrent model + prior net</td><td>Previous (h, z) and action → new h and a distribution for new z.</td><td>“If I push right, how might the cart and pole move?”</td></tr>
-<tr><td>Observation model<small>Decoder</small></td><td>Decoder</td><td>Full state (h, z) → predicted image distribution.</td><td>“What picture would this internal situation produce?”</td></tr>
-<tr><td>Reward model<small>Reward predictor</small></td><td>Reward model</td><td>Full state (h, z) → predicted reward distribution.</td><td>“How much task reward would this situation receive?”</td></tr>
-<tr><td>Inference model<small>Posterior / variational encoder</small></td><td>Encoder + posterior net</td><td>Current image and memory h → posterior distribution for z.</td><td>“After looking at the camera, what state am I probably in?”</td></tr>
-</tbody></table></div>
-<div class="callout"><strong>Encoder and observation model run in opposite directions.</strong><br>Encoder: image → useful features for state inference.<br>Observation model / decoder: internal state → predicted image.</div>
-<p>The reward model learns to predict the reward supplied by the task. It does not invent the goal, and it does not choose the action. PlaNet’s planner chooses actions using its reward predictions.</p>
-<p>A reconstruction describes the <strong>same time step</strong> as the decoded state. If you decode an imagined future state, it becomes a future-image prediction. PlaNet normally skips that decoding during planning because rewards can be predicted directly from the latent state.</p>
-<p class="formula">h<sub>t</sub> = f(h<sub>t−1</sub>, z<sub>t−1</sub>, a<sub>t−1</sub>)<br>Prior: p(z<sub>t</sub> | h<sub>t</sub>) &nbsp; · &nbsp; Posterior: q(z<sub>t</sub> | h<sub>t</sub>, o<sub>t</sub>)<br>Observation: p(o<sub>t</sub> | h<sub>t</sub>, z<sub>t</sub>) &nbsp; · &nbsp; Reward: p(r<sub>t</sub> | h<sub>t</sub>, z<sub>t</sub>)</p>
-<p class="small">Read “|” as “given.” The prior is a prediction before using the current observation; the posterior is an observation-informed estimate. Both are learned distributions, not two separate copies of the true environment state.</p>
-</section>
+        <div class="glass-card">
+          <div style="font-size: 2rem; margin-bottom: 0.75rem;">🔮</div>
+          <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: #fff;">2. Path Prediction (Future)</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+            Forecasting where the vehicle will drive next into the future across horizons $h \in \{1, 5, 15\}$ steps without seeing future GPS points, by rolling out the latent world model's prior dynamics.
+          </p>
+          <div class="math-formula-box" style="margin-top: 1rem;">
+            $$h_{t+1} = \operatorname{GRU}\big(h_t, [z_t^{\text{prior}}, a_t]\big)$$
+            <div style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.3rem; text-align: center;">
+              Decision: $\hat{y}_{t+1} = \operatorname{argmax}_{k} \left( \mathbf{q}(h_{t+1}, z_{t+1})^\top \mathbf{k}(\text{candidate}_k) \right)$
+            </div>
+          </div>
+        </div>
 
-<section class="section" id="learning">
-<h2>How RSSM learns from real experience</h2>
-<p>PlaNet stores sequences of images, actions, and rewards. It samples short sequences from that dataset and processes them in time order. In each step:</p>
-<div class="step"><span class="step-number">1</span><p><strong>Remember the past.</strong> Update h using the previous h, the previous sampled z, and the recorded action.</p></div>
-<div class="step"><span class="step-number">2</span><p><strong>Predict before looking.</strong> The prior estimates a distribution for z from h alone.</p></div>
-<div class="step"><span class="step-number">3</span><p><strong>Use the image.</strong> The encoder extracts image features, and the posterior uses those features together with h to estimate z. Sample the state from this posterior while processing observed data.</p></div>
-<div class="step"><span class="step-number">4</span><p><strong>Check the predictions.</strong> Decode (h, z) to reconstruct the image and predict the reward. Compare those outputs with the recorded image and reward.</p></div>
-<div class="step"><span class="step-number">5</span><p><strong>Connect seeing with predicting.</strong> A KL divergence compares the posterior q with the prior p. This teaches the prior to predict useful states without the image and regularizes the inferred representation so it remains predictable.</p></div>
-<p class="formula">Training loss ≈ image reconstruction error + reward prediction error + KL(q || p)</p>
-<p>This is the paper’s variational learning objective in plain language. The neural components are optimized together by gradient-based learning. The posterior is a learned estimate, not a ground-truth state label.</p>
-<p>In the cart example, suppose memory alone predicts that the pole is still moving left, but the next image provides evidence that it has changed direction. The observation-informed state helps expose that prediction error. Repeating this across many sequences improves both state estimation and dynamics prediction.</p>
-<p class="small">The original implementation uses Gaussian output distributions. Image and reward negative log-likelihoods correspond to squared-error losses up to constants when variance is fixed. It also uses a “free nats” threshold on KL; that is an optimization detail, not an extra model box.</p>
-<p class="source">Source: <a href="https://arxiv.org/pdf/1811.04551#page=4">PlaNet §3, training objective and Eq. 4</a>; Appendix A.</p>
-</section>
+        <div class="glass-card" style="border-color: rgba(16, 185, 129, 0.3);">
+          <div style="font-size: 2rem; margin-bottom: 0.75rem;">⚡</div>
+          <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: #fff;">The Breakthrough Discovery</h3>
+          <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+            <strong>RL alone loses to geometry</strong> (65% vs 84.5%). But <strong>RL + Geometry wins decisively</strong> (86.8% offline / 82.9% online)! World-model road belief scores fused with Newson-Krumm transition geometry form an unbeatable hybrid engine.
+          </p>
+        </div>
+      </div>
+    </section>
 
-<section class="section" id="planning">
-<h2>How PlaNet turns predictions into an action</h2>
-<p>RSSM supplies the simulator. <strong>PlaNet</strong> adds the data-collection, model-training, and action-planning loop. It uses <strong>CEM</strong>, the cross-entropy method, to search for promising action sequences.</p>
-<div class="plain-flow"><b>Observe</b><span>→</span><b>Infer current state</b><span>→</span><b>Imagine action sequences</b><span>→</span><b>Compare rewards</b><span>→</span><b>Act and observe again</b></div>
-<ol>
-<li><strong>Estimate the current state</strong> using the real observation and the posterior.</li>
-<li><strong>Sample many candidate action sequences.</strong> For the cart, each is a possible series of left/right forces.</li>
-<li><strong>Imagine each sequence.</strong> Repeatedly update memory, sample the next stochastic state from the prior, and predict reward. No future camera images are available.</li>
-<li><strong>Score and refine.</strong> Sum the predicted rewards along each sequence, keep the better candidates, and adjust the action-sampling distribution toward them. Repeat this search a few times.</li>
-<li><strong>Execute only the current action from the resulting plan.</strong> After the next real observation arrives, update the state and plan again. The paper takes the current action from the mean of the final CEM distribution.</li>
-</ol>
-<p>Replanning helps the agent respond when reality differs from its predictions. This is called <strong>model-predictive control</strong>.</p>
-<div class="callout"><strong>Imagining does not require drawing imaginary pictures.</strong> Each rollout can stay in the compact latent state and predict rewards directly. That makes it practical to compare many action sequences.</div>
-<p>The outer learning loop starts with a small dataset collected using random actions. PlaNet alternates between fitting its model and collecting more experience with its improving planner. Exploration noise is added during collection.</p>
-<p class="source">Source: <a href="https://arxiv.org/pdf/1811.04551#page=2">PlaNet §2, Algorithm 1</a>; <a href="https://arxiv.org/pdf/1811.04551#page=3">CEM and latent-space planning</a>; Appendix B.</p>
-</section>
+    <!-- The Four Pillars -->
+    <section id="pillars" style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">System Architecture</span>
+        <h2 class="section-title">The Four Architectural Pillars</h2>
+        <p class="section-lead">
+          AlphaEvolve decouples geographic feature extraction, temporal encoding, recurrent world-model dynamics, and label-free training into four synergistic modules.
+        </p>
+      </div>
 
-<section class="section" id="paper">
-<h2>The whole paper, in everyday language</h2>
-<div class="paper-grid">
-<article><h3>1 · The problem</h3><p>Can an agent learn to control an unfamiliar environment using images, without already knowing its physics? Learning by real trial and error can require many interactions. A learned simulator could let the agent try possibilities internally.</p></article>
-<article><h3>2 · The proposed agent: PlaNet</h3><p>Learn compact dynamics from experience and plan directly in that compact space. Train the model, collect new experience using planning, then train again. The agent has no actor or critic network.</p></article>
-<article><h3>3 · The proposed dynamics: RSSM</h3><p>Use both recurrent memory and stochastic states. A purely recurrent model does not explicitly represent different possible futures; a purely stochastic state model can struggle to preserve information over time. The combination worked better in the paper’s experiments.</p></article>
-<article><h3>4 · A training idea: latent overshooting</h3><p>A good one-step prediction does not guarantee a good long rollout when model capacity is limited. Predict several steps ahead and compare the predicted latent distributions with the corresponding future posteriors inferred from observations. This adds supervision without decoding every future image.</p><p><strong>Caveat:</strong> it helped some models, but was unnecessary for the final RSSM agent and slightly reduced RSSM performance in the reported comparison.</p></article>
-<article><h3>5 · What the experiments show</h3><p>PlaNet was evaluated on six simulated continuous-control tasks: cart-pole swing-up, reaching, cheetah running, finger spinning, catching a ball in a cup, and walking. The results support combining deterministic and stochastic state components and refining plans with CEM.</p><p>PlaNet after 500 episodes achieved broadly similar performance to the D4PG baseline trained for 100,000 episodes, except on the finger task. The paper describes this as about 200 times fewer episodes.</p></article>
-<article><h3>6 · What to take from the result</h3><p>A learned model can provide useful predictions for planning without perfectly recreating the world. The evidence is from the paper’s simulated tasks; it does not establish the same efficiency gain for every environment. Model errors, incomplete observations, and unfamiliar situations still matter.</p></article>
-</div>
-<p class="source">Sources: <a href="https://arxiv.org/pdf/1811.04551">PlaNet paper</a>, §§1–5; Appendix A; Appendix D and Fig. 7 for the overshooting caveat.</p>
-</section>
+      <div class="pillars-grid">
+        <!-- Pillar 1a -->
+        <div class="pillar-card">
+          <div class="pillar-num">P1a</div>
+          <div>
+            <div class="pillar-header">
+              <div class="pillar-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--accent-indigo);">🛰️</div>
+              <div>
+                <div class="pillar-name">Sequence Encoder</div>
+                <div class="pillar-tech">Cross-Modal Transformer</div>
+              </div>
+            </div>
+            <p class="pillar-desc">
+              Fuses temporal GPS fixes with spatial road tokens. Processes raw GPS $(\mathrm{lat}, \mathrm{lon}, v, \theta)$ along with up to $K = 10$ candidate road segments retrieved via spatial R-trees.
+            </p>
+          </div>
+          <ul class="pillar-feature-list">
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Temporal self-attention over sequence fixes</span>
+            </li>
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Per-fix cross-attention to candidate road tokens</span>
+            </li>
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Geo-masking (zeroes d_perp on 30% fixes) to kill circularity</span>
+            </li>
+          </ul>
+        </div>
 
-<section class="section" id="dreamer">
-<h2>Where Dreamer fits</h2>
-<div class="table-wrap"><table><thead><tr><th></th><th>PlaNet in this paper</th><th>DreamerV3</th></tr></thead><tbody>
-<tr><td>Dynamics architecture</td><td>RSSM</td><td>An updated RSSM-based world model</td></tr>
-<tr><td>State uncertainty</td><td>Gaussian stochastic states</td><td>Categorical stochastic representations</td></tr>
-<tr><td>Action selection</td><td>CEM searches action sequences at decision time.</td><td>A learned actor chooses actions; actor–critic learning uses imagined experience.</td></tr>
-<tr><td>Prediction heads</td><td>Observation and reward models</td><td>Observation, reward, and continuation models</td></tr>
-</tbody></table></div>
-<p style="margin-top:18px">Your upper diagram shows the shared world-model idea, with some later Dreamer choices included. To understand the original RSSM/PlaNet paper, follow its recurrent model, prior, posterior, decoder, and reward predictor, then connect them to <strong>CEM planning</strong>.</p>
-<p class="source">Sources: <a href="https://arxiv.org/pdf/1811.04551">PlaNet</a>; <a href="https://arxiv.org/html/2301.04104v2">DreamerV3</a>.</p>
-</section>
-<footer class="footer">Prepared from the original papers and your supplied diagram. Examples describe intuition; internal latent coordinates are learned and need not correspond to named physical quantities. <button class="print-button" type="button" onclick="window.print()">Print / save as PDF</button></footer>
-</main>
-<script>
-const modules={
-transition:["Transition: the internal simulator","In RSSM, the transition has two parts: the recurrent model updates memory from the previous memory, stochastic state, and action; the prior net predicts a distribution over the new stochastic state. Together they describe what might happen after an action."],
-memory:["Recurrent model: carry useful history forward","The GRU is the recurrent network used in the paper. It computes hₜ = f(hₜ₋₁, zₜ₋₁, aₜ₋₁). That same update happens during observation and imagination. A new real image does not go directly into this update; it affects the sampled posterior state and therefore later memory updates."],
-prior:["Prior: predict without the new image","The prior p(zₜ | hₜ) is a learned distribution over the stochastic state. It uses memory alone; actions and earlier information have already influenced that memory. During imagined rollouts, sample z from this prior. During model training, compare it with the posterior using KL."],
-encoder:["Encoder: turn the image into useful features","The image encoder extracts features from pixels. These features enter the posterior network together with recurrent memory. This is different from the observation model: the observation model is the decoder that maps a full latent state back to an image."],
-posterior:["Posterior: infer the state after looking","The approximate posterior q(zₜ | hₜ, oₜ) combines memory and evidence from the current image. Sample z from it when processing real observations. It is a learned estimate, not the true state. The prior and posterior do not need a direct forward connection to each other; KL compares their distributions during training."],
-state:["Full state: memory plus one sample","The full state is (hₜ, zₜ). When observing, zₜ is sampled from the posterior. When imagining, it is sampled from the prior. Do not concatenate prior and posterior into a single state. Carry this full state forward and use it to predict observations and rewards."],
-heads:["Prediction heads: image and reward","The observation model (decoder) predicts what image the full state would produce. The reward model predicts its task reward. Both use h and z. Reconstruction supplies a rich training signal; CEM planning uses reward predictions and does not need to decode images. The continuation head in your source image is a later Dreamer component."]
-};
-const nodes=[...document.querySelectorAll("[data-module]")];
-function selectModule(name){const m=modules[name];if(!m)return;document.getElementById("module-title").textContent=m[0];document.getElementById("module-text").textContent=m[1];nodes.forEach(n=>n.classList.toggle("selected",name==="transition"?["memory","prior"].includes(n.dataset.module):n.dataset.module===name));document.querySelectorAll("[data-module-button]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.moduleButton===name)));}
-nodes.forEach(n=>{n.addEventListener("click",()=>selectModule(n.dataset.module));n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectModule(n.dataset.module);}})});
-document.querySelectorAll("[data-module-button]").forEach(b=>b.addEventListener("click",()=>selectModule(b.dataset.moduleButton)));
-function setMode(imagine){document.getElementById("rssm-diagram").classList.toggle("imagining",imagine);document.getElementById("observe-button").setAttribute("aria-pressed",String(!imagine));document.getElementById("imagine-button").setAttribute("aria-pressed",String(imagine));document.getElementById("state-source").textContent=imagine?"z sampled from p":"z sampled from q";document.getElementById("mode-note").textContent=imagine?"Without a future image, sample z from the prior p. Update memory on every imagined step. Reward predictions score plans; decoding imagined images is unnecessary.":"With a real image, sample z from the posterior q. The prior p is also computed during training and compared with the posterior through KL divergence.";selectModule(imagine?"prior":"posterior");}
-document.getElementById("observe-button").addEventListener("click",()=>setMode(false));document.getElementById("imagine-button").addEventListener("click",()=>setMode(true));selectModule("transition");
-</script>
-</body></html>
+        <!-- Pillar 1b -->
+        <div class="pillar-card">
+          <div class="pillar-num">P1b</div>
+          <div>
+            <div class="pillar-header">
+              <div class="pillar-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">🕸️</div>
+              <div>
+                <div class="pillar-name">Semantic Vectorization</div>
+                <div class="pillar-tech">Line Graph + RoadGAT</div>
+              </div>
+            </div>
+            <p class="pillar-desc">
+              Transforms the OpenStreetMap road network into a dual line graph where street segments become vertices and legal turns become edges, enriched via 2-layer Graph Attention Networks.
+            </p>
+          </div>
+          <ul class="pillar-feature-list">
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Dual line-graph connectivity (removes U-turns)</span>
+            </li>
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>13 continuous road features + highway class embeddings</span>
+            </li>
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>GRACE-style self-supervised contrastive pretraining</span>
+            </li>
+          </ul>
+        </div>
 
+        <!-- Pillar 2 -->
+        <div class="pillar-card">
+          <div class="pillar-num">P2</div>
+          <div>
+            <div class="pillar-header">
+              <div class="pillar-icon" style="background: rgba(168, 85, 247, 0.15); color: var(--accent-purple);">🧠</div>
+              <div>
+                <div class="pillar-name">Latent World Model</div>
+                <div class="pillar-tech">Decoder-Light RSSM</div>
+              </div>
+            </div>
+            <p class="pillar-desc">
+              Simulates vehicle driving inside a compact latent space $s_t = (h_t, z_t)$. Combines deterministic GRU memory ($h_t \in \mathbb{R}^{512}$) with discrete categorical latents ($z_t \in \{0,1\}^{32 \times 32}$).
+            </p>
+          </div>
+          <ul class="pillar-feature-list">
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>DreamerV3 discrete straight-through categoricals</span>
+            </li>
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Decoder-Light: No MDN reconstruction (cured collapse!)</span>
+            </li>
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Permutation-equivariant candidate road scoring</span>
+            </li>
+          </ul>
+        </div>
 
+        <!-- Pillar 3 -->
+        <div class="pillar-card">
+          <div class="pillar-num">P3</div>
+          <div>
+            <div class="pillar-header">
+              <div class="pillar-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">🌱</div>
+              <div>
+                <div class="pillar-name">Label-Free Training</div>
+                <div class="pillar-tech">Self-Supervised + DAgger Relabeling</div>
+              </div>
+            </div>
+            <p class="pillar-desc">
+              Learns all representations without human ground-truth. Employs Masked GPS Modeling, InfoNCE contrastive alignments, physics-based rewards, and offline HMM Viterbi pseudo-labeling.
+            </p>
+          </div>
+          <ul class="pillar-feature-list">
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Soft geometric pseudo-labels: $\exp\left(-\frac{d_{\perp}^2}{2\sigma^2}\right)$</span>
+            </li>
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>121.4M GPS fixes relabeled by HMM Viterbi on CPU</span>
+            </li>
+            <li>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>6 physical reward constraints (speed, heading, oneway)</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- End-to-End Workflow Diagram -->
+    <section style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">Data & Model Pipeline</span>
+        <h2 class="section-title">End-to-End System Workflow</h2>
+        <p class="section-lead">
+          Follow the trajectory of a GPS fix: from raw satellite coordinates, spatial indexing, line graph projection, through the dual-stream RSSM to the hybrid Viterbi inference engine.
+        </p>
+      </div>
+
+      <div class="diagram-wrapper">
+        <svg viewBox="0 0 1100 380" style="width: 100%; height: auto; font-family: 'Inter', sans-serif;">
+          <defs>
+            <linearGradient id="gradP1b" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0e1526" />
+              <stop offset="100%" stop-color="#162038" />
+            </linearGradient>
+            <linearGradient id="gradP2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1e1b4b" />
+              <stop offset="100%" stop-color="#312e81" />
+            </linearGradient>
+            <linearGradient id="gradHybrid" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#064e3b" />
+              <stop offset="100%" stop-color="#047857" />
+            </linearGradient>
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+            <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#6366f1" />
+            </marker>
+            <marker id="arr-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#06b6d4" />
+            </marker>
+            <marker id="arr-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+            </marker>
+          </defs>
+
+          <!-- Stage 0: Road Graph -->
+          <rect x="30" y="30" width="180" height="130" rx="10" fill="url(#gradP1b)" stroke="rgba(6, 182, 212, 0.4)" stroke-width="1.5" />
+          <text x="45" y="55" fill="#06b6d4" font-size="12" font-weight="700" letter-spacing="1">STAGE 0: ROADGRAPH</text>
+          <text x="45" y="75" fill="#fff" font-size="13" font-weight="600">OSM Raw BBox</text>
+          <text x="45" y="95" fill="#94a3b8" font-size="11">&rarr; Line Graph (Dual)</text>
+          <text x="45" y="115" fill="#94a3b8" font-size="11">&rarr; 2-layer RoadGAT</text>
+          <rect x="45" y="125" width="150" height="22" rx="4" fill="rgba(6, 182, 212, 0.15)" />
+          <text x="55" y="140" fill="#67e8f9" font-size="10" font-family="'JetBrains Mono', monospace">Embeddings z[N,256]</text>
+
+          <!-- Stage 1: Sequence Encoder -->
+          <rect x="270" y="30" width="220" height="130" rx="10" fill="url(#gradP1b)" stroke="rgba(99, 102, 241, 0.4)" stroke-width="1.5" />
+          <text x="285" y="55" fill="#a5b4fc" font-size="12" font-weight="700" letter-spacing="1">STAGE 1: P1a ENCODER</text>
+          <text x="285" y="75" fill="#fff" font-size="13" font-weight="600">Cross-Modal Transformer</text>
+          <text x="285" y="95" fill="#94a3b8" font-size="11">&bull; GPS (lat,lon,v,&theta;) Sequence</text>
+          <text x="285" y="115" fill="#94a3b8" font-size="11">&bull; STRtree K=10 Cand Tokens</text>
+          <rect x="285" y="125" width="190" height="22" rx="4" fill="rgba(99, 102, 241, 0.15)" />
+          <text x="295" y="140" fill="#c7d2fe" font-size="10" font-family="'JetBrains Mono', monospace">Fused Latent z1 [B,L,256]</text>
+
+          <!-- Stage 2R: Latent World Model -->
+          <rect x="550" y="30" width="270" height="200" rx="12" fill="url(#gradP2)" stroke="rgba(168, 85, 247, 0.6)" stroke-width="1.5" filter="url(#glow)" />
+          <text x="565" y="55" fill="#e9d5ff" font-size="12" font-weight="700" letter-spacing="1">STAGE 2R: WORLD MODEL (RSSM2)</text>
+          <text x="565" y="75" fill="#fff" font-size="14" font-weight="700">Deterministic GRU: h_t (512-d)</text>
+          <text x="565" y="95" fill="#c084fc" font-size="12">h_{t+1} = GRU(h_t, [z_t, road_embed])</text>
+          
+          <line x1="565" y1="105" x2="805" y2="105" stroke="rgba(255,255,255,0.15)" />
+          <text x="565" y="125" fill="#fff" font-size="14" font-weight="700">Categorical Latent: z_t (32×32)</text>
+          <text x="565" y="143" fill="#93c5fd" font-size="11">Posterior: q(z_t | h_t, z1_t) [With GPS]</text>
+          <text x="565" y="160" fill="#f472b6" font-size="11">Prior: p(z_t | h_t) [Imagination/Forecast]</text>
+          <rect x="565" y="172" width="240" height="42" rx="6" fill="rgba(0,0,0,0.3)" />
+          <text x="575" y="188" fill="#a7f3d0" font-size="11" font-weight="600">RoadScorer: Softmax Query &bull; Key</text>
+          <text x="575" y="204" fill="#fde68a" font-size="10">RewardScorer: Symlog Physics Target</text>
+
+          <!-- Production Matcher -->
+          <rect x="880" y="30" width="190" height="300" rx="12" fill="url(#gradHybrid)" stroke="rgba(16, 185, 129, 0.6)" stroke-width="2" />
+          <text x="895" y="58" fill="#6ee7b7" font-size="12" font-weight="800" letter-spacing="1">PRODUCTION MATCHER</text>
+          <text x="895" y="80" fill="#fff" font-size="15" font-weight="700">matcher.py API</text>
+          
+          <rect x="895" y="100" width="160" height="60" rx="6" fill="rgba(0,0,0,0.3)" />
+          <text x="905" y="120" fill="#a7f3d0" font-size="12" font-weight="700">1. match_offline</text>
+          <text x="905" y="137" fill="#cbd5e1" font-size="11">Hybrid Viterbi</text>
+          <text x="905" y="152" fill="#34d399" font-size="11" font-weight="600">86.8% Accuracy</text>
+
+          <rect x="895" y="175" width="160" height="60" rx="6" fill="rgba(0,0,0,0.3)" />
+          <text x="905" y="195" fill="#67e8f9" font-size="12" font-weight="700">2. match_online</text>
+          <text x="905" y="212" fill="#cbd5e1" font-size="11">hyb+topo streaming</text>
+          <text x="905" y="227" fill="#22d3ee" font-size="11" font-weight="600">82.9% Match (5.8% Jumps)</text>
+
+          <rect x="895" y="250" width="160" height="65" rx="6" fill="rgba(0,0,0,0.3)" />
+          <text x="905" y="270" fill="#fcd34d" font-size="12" font-weight="700">3. predict</text>
+          <text x="905" y="287" fill="#cbd5e1" font-size="11">Prior Rollouts (h=1..15)</text>
+          <text x="905" y="302" fill="#fbbf24" font-size="11" font-weight="600">Beats HMM at all horizons</text>
+
+          <!-- Flow Connectors -->
+          <path d="M 210 95 L 265 95" stroke="#06b6d4" stroke-width="2" marker-end="url(#arr-cyan)" />
+          <path d="M 490 95 L 545 95" stroke="#6366f1" stroke-width="2" marker-end="url(#arr)" />
+          <path d="M 820 130 L 875 130" stroke="#10b981" stroke-width="2" marker-end="url(#arr-green)" />
+
+          <!-- Classical NK Feedback Connection -->
+          <rect x="270" y="240" width="220" height="90" rx="10" fill="rgba(14, 21, 38, 0.9)" stroke="rgba(245, 158, 11, 0.4)" stroke-width="1.5" />
+          <text x="285" y="265" fill="#fbbf24" font-size="12" font-weight="700">CLASSICAL FALLBACK (HMM)</text>
+          <text x="285" y="285" fill="#cbd5e1" font-size="11">Newson-Krumm 2009 Baseline</text>
+          <text x="285" y="302" fill="#94a3b8" font-size="10">&bull; Gaussian Emission &bull; Dijkstra Route</text>
+          <text x="285" y="318" fill="#f59e0b" font-size="10" font-weight="600">84.5% Offline / Zero Training</text>
+
+          <path d="M 490 285 L 875 285" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arr)" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- DreamerV3 & RSSM Deep Dive Bridge -->
+    <section id="dreamer-rssm" style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">Theoretical Foundations</span>
+        <h2 class="section-title">DreamerV3 & RSSM Papers: Bridge to AlphaEvolve</h2>
+        <p class="section-lead">
+          Understanding the mathematical mechanics of Hafner et al.'s Recurrent State-Space Models (RSSMs) and why porting DreamerV3 from pixel game worlds to road networks required a structural revolution.
+        </p>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="openTab(event, 'tab-rssm-basics')">1. What is an RSSM?</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-dreamer-math')">2. DreamerV3 Math & Formulas</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-side-by-side')">3. DreamerV3 vs AlphaEvolve</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-posterior-collapse')">4. Why Reconstruction Failed</button>
+      </div>
+
+      <!-- Tab 1: RSSM Basics -->
+      <div id="tab-rssm-basics" class="tab-pane active">
+        <div class="glass-card" style="margin-bottom: 1.5rem;">
+          <h3 style="color: #fff; font-size: 1.4rem; margin-bottom: 0.75rem;">The Architecture of a World Model</h3>
+          <p style="color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;">
+            In traditional Recurrent Neural Networks (RNNs/LSTMs), the hidden state is entirely deterministic. If the world has branching futures or ambiguous observations, deterministic states are forced to average across possibilities, causing blurriness and hallucination.
+          </p>
+          <p style="color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;">
+            An <strong>RSSM (Recurrent State-Space Model)</strong> splits the representation into two cooperating parts:
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+            <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: var(--radius-sm); padding: 1.25rem;">
+              <h4 style="color: #a5b4fc; font-size: 1.1rem; margin-bottom: 0.5rem;">1. Deterministic State $h_t$ (Memory)</h4>
+              <p style="color: #cbd5e1; font-size: 0.9rem;">
+                A continuous vector ($h_t \in \mathbb{R}^{512}$) governed by a GRU Cell. It preserves long-term temporal context: velocity, current road class, route progression over the past several kilometers.
+              </p>
+            </div>
+            <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius-sm); padding: 1.25rem;">
+              <h4 style="color: #67e8f9; font-size: 1.1rem; margin-bottom: 0.5rem;">2. Stochastic Latent $z_t$ (Uncertainty)</h4>
+              <p style="color: #cbd5e1; font-size: 0.9rem;">
+                A discrete categorical representation ($32 \times 32$ matrix). It captures immediate spatial ambiguity: <em>"Did the vehicle turn left at the fork or continue straight?"</em>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: DreamerV3 Math -->
+      <div id="tab-dreamer-math" class="tab-pane">
+        <div class="glass-card">
+          <h3 style="color: #fff; font-size: 1.35rem; margin-bottom: 0.75rem;">Core Mathematical Formulations</h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
+            AlphaEvolve adopts the five stabilizing invariants introduced in the DreamerV3 paper (Hafner et al., 2023):
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div>
+              <h4 style="color: var(--accent-cyan); font-size: 1rem;">A. Discrete Straight-Through Categoricals</h4>
+              <p style="color: var(--text-muted); font-size: 0.88rem;">
+                Instead of Gaussian latents (which suffer from variance collapse in complex spaces), DreamerV3 samples from $G = 32$ groups of $C = 32$ discrete categories. During forward pass, it takes a hard one-hot sample; during backward pass, it computes gradients with respect to the soft probabilities:
+              </p>
+              <div class="math-formula-box">
+                $$\mathbf{z} = \operatorname{one\_hot}\big(\operatorname{argmax}(\mathbf{p})\big) + \mathbf{p} - \operatorname{sg}(\mathbf{p})$$
+              </div>
+              <p style="color: var(--text-dim); font-size: 0.82rem; margin-top: -0.5rem;">
+                <em>Forward pass produces hard discrete state $\mathbf{z} \in \{0, 1\}^{32 \times 32}$; backward pass propagates gradients via the straight-through estimator $\nabla_{\mathbf{p}} \mathbf{z} \approx \mathbf{I}$.</em>
+              </p>
+            </div>
+
+            <div>
+              <h4 style="color: var(--accent-indigo); font-size: 1rem;">B. 1% Unimix Floor (Anti-Collapse Stabilizer)</h4>
+              <p style="color: var(--text-muted); font-size: 0.88rem;">
+                To prevent any single category from reaching probability $1.0$ (which would yield infinite $\log p$ and zero exploration), a 1% uniform distribution is blended into all logits:
+              </p>
+              <div class="math-formula-box">
+                $$p_{\text{mixed}} = (1 - \eta) \cdot \operatorname{softmax}(\boldsymbol{\ell}) + \eta \cdot \frac{1}{C}, \qquad \text{where } \eta = 0.01, \; C = 32$$
+              </div>
+              <p style="color: var(--text-dim); font-size: 0.82rem; margin-top: -0.5rem;">
+                <em>Guarantees a strictly positive entropy floor across all latent classes, preventing deterministic collapse $\log 0 \to -\infty$.</em>
+              </p>
+            </div>
+
+            <div>
+              <h4 style="color: var(--accent-emerald); font-size: 1rem;">C. KL Balancing & Free Bits</h4>
+              <p style="color: var(--text-muted); font-size: 0.88rem;">
+                The prior $p(z_t \mid h_t)$ trains toward the posterior $q(z_t \mid h_t, x_t)$ with weight $0.5$, while the posterior regularizes toward the prior with weight $0.1$. A free-bits floor of $1.0\,\text{nat}$ per group prevents the latent space from collapsing when the prior is inaccurate:
+              </p>
+              <div class="math-formula-box">
+                $$\mathcal{L}_{\text{KL}} = 0.5 \sum_{g=1}^G \max\left(1.0, \, \operatorname{KL}\big(\operatorname{sg}(q_g) \parallel p_g\big)\right) + 0.1 \sum_{g=1}^G \max\left(1.0, \, \operatorname{KL}\big(q_g \parallel \operatorname{sg}(p_g)\big)\right)$$
+              </div>
+              <p style="color: var(--text-dim); font-size: 0.82rem; margin-top: -0.5rem;">
+                <em>Asymmetric stop-gradient trains prior dynamics 5× faster than regularizing posterior latents, keeping representations informative.</em>
+              </p>
+            </div>
+
+            <div>
+              <h4 style="color: var(--accent-amber); font-size: 1rem;">D. Symlog & Symexp Transformations</h4>
+              <p style="color: var(--text-muted); font-size: 0.88rem;">
+                Compresses wide dynamic ranges of physics rewards (e.g., one-way violation $-5.0$, heading alignment $+0.5$, topology $+2.0$) so gradients do not overwhelm representation learning:
+              </p>
+              <div class="math-formula-box">
+                $$\operatorname{symlog}(x) = \operatorname{sign}(x) \cdot \ln(1 + |x|), \qquad \operatorname{symexp}(y) = \operatorname{sign}(y) \cdot \big(\exp(|y|) - 1\big)$$
+              </div>
+              <p style="color: var(--text-dim); font-size: 0.82rem; margin-top: -0.5rem;">
+                <em>Preserves exact sign and near-zero gradient slopes while compressing extreme outliers without artificial sigmoid saturation.</em>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Side-by-Side Comparison -->
+      <div id="tab-side-by-side" class="tab-pane">
+        <div class="table-container">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Vanilla DreamerV3 (Hafner 2023)</th>
+                <th>AlphaEvolve World Model (Ours)</th>
+                <th>Design Rationale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Domain & Task</strong></td>
+                <td>Atari, DMC, Minecraft (Diamond finding)</td>
+                <td>Fleet GPS Map Matching & Route Prediction</td>
+                <td>Continuous spatial road networks instead of pixel grids.</td>
+              </tr>
+              <tr>
+                <td><strong>Observation Input</strong></td>
+                <td>$64 \times 64 \times 3$ raw RGB pixel images</td>
+                <td>GPS fixes $(\mathrm{lat}, \mathrm{lon}, v, \theta) + K=10$ candidate road tokens</td>
+                <td>Cross-modal Transformer handles sparse spatiotemporal fixes.</td>
+              </tr>
+              <tr>
+                <td><strong>Latent Space ($z_t$)</strong></td>
+                <td>$32 \times 32$ categorical latents (Universal)</td>
+                <td>$16 \times 16 \to 32 \times 32$ (P2 upgrade)</td>
+                <td>$32 \times 32$ unlocked a decisive $+2.5\text{ to }+3.3\,\mathrm{pp}$ accuracy gain.</td>
+              </tr>
+              <tr>
+                <td><strong>Observation Decoder</strong></td>
+                <td>Heavy CNN reconstruction of all image pixels</td>
+                <td><span class="tag-cell" style="background: rgba(244, 63, 94, 0.2); color: #fda4af;">DECODER-LIGHT</span>: No pixel/GPS reconstruction</td>
+                <td>Heavy decoders cause <strong>posterior collapse</strong> (Dai et al. 2020).</td>
+              </tr>
+              <tr>
+                <td><strong>Primary Objective</strong></td>
+                <td>ELBO: Pixel recon + Reward + Continue</td>
+                <td>Road Candidate Cross-Entropy + Symlog Physics</td>
+                <td>Follows MuDreamer: classify decisions rather than reconstruct noise.</td>
+              </tr>
+              <tr>
+                <td><strong>Inference Engine</strong></td>
+                <td>Actor policy rollouts in imagination</td>
+                <td><strong>Hybrid Viterbi</strong> (WM Road-Head + NK Geometry)</td>
+                <td>Pure RL loses to math; Hybrid achieves SOTA 86.8%.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 4: Why Reconstruction Failed -->
+      <div id="tab-posterior-collapse" class="tab-pane">
+        <div class="glass-card" style="border-left: 4px solid var(--accent-rose);">
+          <h3 style="color: #fff; font-size: 1.35rem; margin-bottom: 0.75rem;">The Posterior Collapse Mystery (Track A &rarr; Track C)</h3>
+          <p style="color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem;">
+            In the initial 3 runs (Track A), we built a faithful DreamerV3 port equipped with a Mixture Density Network (MDN) GPS reconstruction head. <strong>It suffered immediate, catastrophic posterior collapse.</strong>
+          </p>
+          <div style="background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.25rem;">
+            <h4 style="color: #fda4af; font-size: 1rem; margin-bottom: 0.5rem;">Root Cause: Freeloading on the Deterministic Channel</h4>
+            <p style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.6;">
+              As proven theoretically by <em>Dai, Wang, & Wipf (ICML 2020)</em>, deep nonlinear decoders have bad local minima where the deterministic GRU state $h_t$ "freeloads" on teacher-forced road context. The network discovers it can minimize reconstruction loss via $h_t$ alone, setting the stochastic channel $z_t$ to uninformative noise ($\operatorname{KL} \to 0$).
+            </p>
+          </div>
+          <h4 style="color: var(--accent-emerald); font-size: 1rem; margin-bottom: 0.5rem;">The Solution: The Decoder-Light Architecture</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            Drawing from <em>MuDreamer (Burchi & Timofte 2024)</em> and <em>TD-MPC2 (Hansen et al. 2024)</em>, we eliminated the heavy MDN continuous GPS reconstruction head entirely:
+          </p>
+          <ul style="list-style: disc; margin-left: 1.5rem; color: #cbd5e1; font-size: 0.88rem; line-height: 1.7; margin-top: 0.5rem;">
+            <li><strong>Z-Only Coarse GPS Decode:</strong> A linear probe $\mathcal{L}_{\text{gps}} = \|\operatorname{MLP}(z_t) - x_t^{\text{gps}}\|_2^2$ sees <em>only</em> $z_t$ (structurally blind to $h_t$). The deterministic state $h_t$ can no longer satisfy reconstruction.</li>
+            <li><strong>Road Candidate Cross-Entropy as Primary Signal:</strong> Classifying candidate road segments replaces raw coordinate reconstruction, focusing representations entirely on discrete navigational choices.</li>
+            <li><strong>Result:</strong> Posterior collapse vanished completely! KL divergence stabilized at a healthy $8\text{--}9+\,\mathrm{nats}$ in $16 \times 16$ and $22.8\text{--}23.6\,\mathrm{nats}$ in $32 \times 32$.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive RSSM Step Simulator -->
+    <section id="simulator" style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">Hands-On Laboratory</span>
+        <h2 class="section-title">Interactive RSSM Step Simulator</h2>
+        <p class="section-lead">
+          Step through the latent world model in real time. Observe how the deterministic GRU vector updates, how stochastic categorical latents fire, and how candidate roads are scored.
+        </p>
+      </div>
+
+      <div class="sim-container">
+        <div class="sim-controls">
+          <button class="sim-btn" onclick="simStep()">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            Step World Model
+          </button>
+          <button class="sim-btn secondary" onclick="simReset()">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Reset Trajectory
+          </button>
+
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Mode:</span>
+            <div class="sim-toggle">
+              <button id="btn-mode-post" class="sim-toggle-btn active" onclick="setSimMode('post')">Posterior (GPS Observation)</button>
+              <button id="btn-mode-prior" class="sim-toggle-btn" onclick="setSimMode('prior')">Prior (Imagination / Rollout)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-visual-grid">
+          <!-- Left: Latent State View -->
+          <div class="sim-panel">
+            <div class="sim-panel-title">
+              <span>Stochastic Categorical Latent $z_t$ (32 Groups $\times$ 32 Classes)</span>
+              <span id="sim-step-badge" class="tag-cell">Timestep t = 0</span>
+            </div>
+
+            <div class="latent-grid-view" id="latentGrid">
+              <!-- Dynamically rendered 32x32 cells -->
+            </div>
+
+            <div class="sim-panel-title" style="margin-top: 1.25rem;">
+              <span>Deterministic Memory $h_t$ ($512$-dim GRU State)</span>
+              <span style="font-size: 0.75rem; color: var(--accent-indigo);">Active Norm: 14.82</span>
+            </div>
+            <div class="h-vector-strip" id="hStrip"></div>
+
+            <div class="sim-stats-row">
+              <div class="stat-box">
+                <div class="stat-box-val" id="statKL">23.1 nats</div>
+                <div class="stat-box-lbl">KL Divergence</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-box-val" id="statEnt">15.02</div>
+                <div class="stat-box-lbl">Posterior Entropy</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-box-val" id="statActive">31 / 32</div>
+                <div class="stat-box-lbl">Active Groups</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Road Candidate Logits View -->
+          <div class="sim-panel">
+            <div class="sim-panel-title">
+              <span>Permutation-Equivariant RoadScorer Logits</span>
+              <span style="font-size: 0.75rem; color: var(--accent-emerald);">Top-1 Selected</span>
+            </div>
+
+            <div class="road-candidate-list" id="candidateList">
+              <!-- Dynamically updated candidate slots -->
+            </div>
+
+            <div style="margin-top: 1.5rem; background: rgba(0,0,0,0.35); border-radius: var(--radius-sm); padding: 1rem; border: 1px solid var(--border-subtle);">
+              <div style="font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem;">Under the Hood at Timestep <span id="sim-t-num">0</span>:</div>
+              <p id="sim-explain-text" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                State initialized. In <strong>Posterior mode</strong>, the cross-modal GPS embedding $z_{1,t}$ is fused with $h_{t-1}$ to sample categorical latents $z_t$. RoadScorer computes dot product $\mathbf{q}(h_t, z_t)^\top \mathbf{k}(\text{candidate})$.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Foundational vs Advanced Concepts Ladder -->
+    <section id="concepts" style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">Curriculum</span>
+        <h2 class="section-title">The Concepts Ladder: Basics to Advanced</h2>
+        <p class="section-lead">
+          Everything you need to master: from spatial coordinate frames and classical Hidden Markov Models to straight-through categorical estimators, Goodhart's law, and scaling laws.
+        </p>
+      </div>
+
+      <div class="concept-grid">
+        <!-- Concept 1: GPS Noise -->
+        <div class="glass-card">
+          <span class="tag-cell" style="background: rgba(148, 163, 184, 0.2); color: #cbd5e1; margin-bottom: 0.75rem;">Level 1: Foundational</span>
+          <h3 style="color: #fff; font-size: 1.25rem; margin-bottom: 0.5rem;">GPS Noise, Multipath & Spatial Drift</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            Consumer and taxi GPS sensors have typical errors of 5–15 meters, ballooning to 50+ meters in urban canyons due to building reflections (multipath interference). Simple nearest-road snapping fails catastrophically at overpasses, dual carriageways, and intersections.
+          </p>
+        </div>
+
+        <!-- Concept 2: Line Graph -->
+        <div class="glass-card">
+          <span class="tag-cell" style="background: rgba(148, 163, 184, 0.2); color: #cbd5e1; margin-bottom: 0.75rem;">Level 1: Foundational</span>
+          <h3 style="color: #fff; font-size: 1.25rem; margin-bottom: 0.5rem;">Dual Line Graph of Road Networks</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            Standard maps represent intersections as nodes and streets as edges. A <strong>Line Graph (Dual Graph)</strong> inverts this: each street segment becomes a node $u \in V$, and a directed edge connects $u \to v$ if and only if a vehicle can legally turn from segment $u$ into segment $v$. Immediate U-turns are pruned by construction.
+          </p>
+        </div>
+
+        <!-- Concept 3: Newson & Krumm HMM -->
+        <div class="glass-card" style="grid-column: 1 / -1;">
+          <span class="tag-cell" style="background: rgba(148, 163, 184, 0.2); color: #cbd5e1; margin-bottom: 0.75rem;">Level 2: Intermediate Benchmark</span>
+          <h3 style="color: #fff; font-size: 1.25rem; margin-bottom: 0.5rem;">Newson & Krumm (2009) Hidden Markov Model</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            The definitive classical baseline. Snapping each GPS fix to candidates within search radius $r = 50\,\mathrm{m}$ using two probability distributions:
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin: 0.75rem 0;">
+            <div class="math-formula-box" style="margin: 0;">
+              <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; margin-bottom: 0.3rem;">1. Gaussian Emission Probability:</div>
+              $$p(x_t \mid s_t = k) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{d_{\perp}(x_t, k)^2}{2\sigma^2}\right)$$
+              <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 0.3rem;">Where $d_{\perp}$ is perpendicular distance to road center, $\sigma = 10.0\,\mathrm{m}$.</div>
+            </div>
+            <div class="math-formula-box" style="margin: 0;">
+              <div style="font-size: 0.8rem; color: var(--accent-emerald); font-weight: 600; margin-bottom: 0.3rem;">2. Exponential Transition Penalty:</div>
+              $$p(s_{t+1} = j \mid s_t = i) = \frac{1}{\beta} \exp\left(-\frac{|d_{\text{route}}(i, j) - d_{\text{gc}}(x_t, x_{t+1})|}{\beta}\right)$$
+              <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 0.3rem;">Where $d_{\text{route}}$ is shortest Dijkstra path, $d_{\text{gc}}$ is Haversine distance, $\beta = 20.0\,\mathrm{m}$.</div>
+            </div>
+          </div>
+          <p style="color: var(--text-dim); font-size: 0.84rem; margin-top: 0.5rem;">
+            Decoded globally via dynamic programming (Viterbi traceback). Achieves <strong>84.47% offline</strong> accuracy, but drops to <strong>59.18% online</strong> when greedy decoding without future lookahead.
+          </p>
+        </div>
+
+        <!-- Concept 4: Straight-Through Categoricals -->
+        <div class="glass-card">
+          <span class="tag-cell" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; margin-bottom: 0.75rem;">Level 3: Advanced</span>
+          <h3 style="color: #fff; font-size: 1.25rem; margin-bottom: 0.5rem;">Straight-Through Gradient Estimation</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            Sampling from discrete distributions has zero derivative almost everywhere. The straight-through estimator computes forward passes with the hard categorical sample $\mathbf{z}$, but routes the backward pass directly through the unimix-smoothed softmax probabilities $\mathbf{p}$, preserving clean backpropagation gradients: $\nabla_{\mathbf{p}} \mathbf{z} \approx \mathbf{I}$.
+          </p>
+        </div>
+
+        <!-- Concept 5: Goodhart's Law in RL -->
+        <div class="glass-card">
+          <span class="tag-cell" style="background: rgba(244, 63, 94, 0.2); color: #fda4af; margin-bottom: 0.75rem;">Level 3: Advanced</span>
+          <h3 style="color: #fff; font-size: 1.25rem; margin-bottom: 0.5rem;">Goodhart's Law & RL Actor Collapse</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            When fine-tuning the RL actor policy (Stage 3) on imagined rollouts against a learned reward head, accuracy peaked at step 0 (77.4%) and degraded monotonically to ~65%. The policy learned to exploit blind spots in the frozen learned reward model rather than truly matching the road—a classic demonstration of Goodhart's Law / reward overoptimization (Gao et al., ICML 2023).
+          </p>
+        </div>
+
+        <!-- Concept 6: DAgger & Weak Supervision -->
+        <div class="glass-card">
+          <span class="tag-cell" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; margin-bottom: 0.75rem;">Level 3: Advanced</span>
+          <h3 style="color: #fff; font-size: 1.25rem; margin-bottom: 0.5rem;">DAgger / Weak Supervision Relabeling</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            Nearest-point targets are topology-blind. By generating full-trajectory HMM Viterbi paths for 121.4M fixes and blending targets ($\alpha = 0.5$), the student model learns global continuity, cutting disconnected road jumps from 5.83% down to 4.71% without sacrificing accuracy.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comprehensive File-by-File Catalog -->
+    <section id="file-explorer" style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">Repository Inventory</span>
+        <h2 class="section-title">Complete File-by-File Explorer & Guide</h2>
+        <p class="section-lead">
+          Every single file in the AlphaEvolve codebase demystified: its plain-English purpose, deep technical functions, algorithms, inputs/outputs, and hard-won gotchas.
+        </p>
+      </div>
+
+      <div class="explorer-filter-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="fileSearch" class="search-input" placeholder="Search files, classes, concepts, algorithms..." oninput="filterFiles()">
+        </div>
+        <div class="filter-tags">
+          <button class="filter-btn active" onclick="setFileFilter('all')">All Files (30+)</button>
+          <button class="filter-btn" onclick="setFileFilter('core')">Core API</button>
+          <button class="filter-btn" onclick="setFileFilter('models')">Models</button>
+          <button class="filter-btn" onclick="setFileFilter('train')">Training</button>
+          <button class="filter-btn" onclick="setFileFilter('data')">Data & Graph</button>
+          <button class="filter-btn" onclick="setFileFilter('hmm')">Classical HMM</button>
+          <button class="filter-btn" onclick="setFileFilter('eval')">Evaluations</button>
+        </div>
+      </div>
+
+      <div class="file-cards-grid" id="fileGrid">
+        <!-- Cards dynamically injected or rendered -->
+      </div>
+    </section>
+
+    <!-- The Research Drama: Negative Results & Evolution -->
+    <section id="experiments" style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">Empirical Engineering</span>
+        <h2 class="section-title">The Research Drama: What Didn't Work and Why</h2>
+        <p class="section-lead">
+          Real research logs document failures with as much rigor as successes. These negative results closed unproductive directions and forged the final production system.
+        </p>
+      </div>
+
+      <div class="timeline-wrap">
+        <!-- Event 1 -->
+        <div class="timeline-item">
+          <div class="timeline-dot danger"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Track A: Faithful DreamerV3 RSSM Collapses</span>
+              <span class="timeline-date">Runs 1–3</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+              <strong>Failure:</strong> Ported DreamerV3 with an MDN (Mixture Density Network) continuous GPS reconstruction head. Posterior collapsed across 4 consecutive experiment rounds. KL dropped to ~0 nats.
+              <br><strong>Diagnosis:</strong> Deterministic GRU state $h_t$ freeloaded on teacher-forced road context via the deep decoder (Dai et al. ICML 2020).
+              <br><strong>Resolution:</strong> Abandoned heavy reconstruction; created Track C (Decoder-Light).
+            </p>
+          </div>
+        </div>
+
+        <!-- Event 2 -->
+        <div class="timeline-item">
+          <div class="timeline-dot danger"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">RL Actor Fails to Beat Supervised Road Head</span>
+              <span class="timeline-date">Stage 3 Probe</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+              <strong>Failure:</strong> Discrete actor trained via imagined rollouts achieved only 65% matching accuracy, far below the simple supervised road head (77%+).
+              <br><strong>Diagnosis:</strong> Early-stopping probe proved Step 0 was the peak; every gradient step degraded accuracy monotonically. Classic Goodhart's law against an imperfect learned reward head.
+              <br><strong>Resolution:</strong> RL actor track closed with formal proof; production engine standardized on road-head decode.
+            </p>
+          </div>
+        </div>
+
+        <!-- Event 3 -->
+        <div class="timeline-item">
+          <div class="timeline-dot warning"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Learned Road Semantics Fail Out-of-Distribution</span>
+              <span class="timeline-date">Porto &rarr; Beijing T-Drive</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+              <strong>Failure:</strong> Zero-shot testing of a Porto-trained model on Beijing dropped 17 percentage points in accuracy. The hybrid model scored 0.7871 vs pure geometry 0.7955.
+              <br><strong>Diagnosis:</strong> Classical geometry (great-circle distances, road topology) transfers universally; learned semantic embeddings overfit to the layout and conventions of the training city.
+              <br><strong>Resolution:</strong> Engineered automatic city-mode fallback: trained cities use Hybrid Mode, unseen cities automatically use pure geometric HMM.
+            </p>
+          </div>
+        </div>
+
+        <!-- Event 4 -->
+        <div class="timeline-item">
+          <div class="timeline-dot success"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Decoder-Light Architecture & Hybrid Viterbi Win</span>
+              <span class="timeline-date">Run-2-XL & Research2</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+              <strong>Breakthrough:</strong> Stripping MDN and gating GPS decode to $z$-only cured collapse permanently. Fusing world-model road probabilities into the Newson-Krumm Viterbi matrix broke all previous records: <strong>86.8% offline accuracy</strong> and <strong>82.9% streaming online accuracy</strong>!
+            </p>
+          </div>
+        </div>
+
+        <!-- Event 5 -->
+        <div class="timeline-item">
+          <div class="timeline-dot success"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Neural Scaling Laws Confirmed</span>
+              <span class="timeline-date">P1 Data & P2 Capacity</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+              <strong>Breakthrough:</strong> 
+              <br>&bull; <strong>Data Scaling:</strong> 200k (75.6%) &rarr; 400k (77.7%) &rarr; 800k (79.7%) &rarr; 1.66M (81.0%): steady +2.0pp per doubling of training trajectories.
+              <br>&bull; <strong>Capacity Scaling:</strong> Widening discrete latents from $16 \times 16$ to $32 \times 32$ (matching DreamerV3 standard width) delivered an immediate $+2.5\text{ to }+3.3\,\mathrm{pp}$ accuracy leap at only 58% of training schedule!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Literature Papers Explorer -->
+    <section id="papers" style="margin-bottom: 4rem;">
+      <div class="section-title-wrap">
+        <span class="section-eyebrow">Academic Lineage</span>
+        <h2 class="section-title">Key Literature Papers & Citations</h2>
+        <p class="section-lead">
+          AlphaEvolve synthesizes insights from 50+ research papers across model-based RL, self-supervised learning, trajectory modeling, and geographic information systems.
+        </p>
+      </div>
+
+      <div class="table-container">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Paper & Authors</th>
+              <th>Venue / Year</th>
+              <th>Core Concept</th>
+              <th>Direct Role in AlphaEvolve</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>DreamerV3</strong><br><span style="font-size:0.8rem;color:var(--text-dim);">Hafner, Pasukonis, Ba, Lillicrap</span></td>
+              <td>arXiv 2023</td>
+              <td>Mastering diverse domains with RSSM & categorical latents.</td>
+              <td>Primary architectural ancestor of Pillar 2: KL balancing, free bits, 1% unimix floor, categorical straight-through.</td>
+            </tr>
+            <tr>
+              <td><strong>MuDreamer</strong><br><span style="font-size:0.8rem;color:var(--text-dim);">Burchi & Timofte</span></td>
+              <td>arXiv 2024</td>
+              <td>World models without observation reconstruction.</td>
+              <td>Direct blueprint for "Decoder-Light": replacing raw pixel/GPS reconstruction with action/road prediction to eliminate collapse.</td>
+            </tr>
+            <tr>
+              <td><strong>TD-MPC2</strong><br><span style="font-size:0.8rem;color:var(--text-dim);">Hansen et al.</span></td>
+              <td>ICLR 2024</td>
+              <td>Decoder-free model-based RL at scale.</td>
+              <td>Confirms that latent spaces optimized for downstream decision tasks outperform those burdened by raw reconstruction.</td>
+            </tr>
+            <tr>
+              <td><strong>Newson & Krumm</strong><br><span style="font-size:0.8rem;color:var(--text-dim);">Newson & Krumm</span></td>
+              <td>ACM GIS 2009</td>
+              <td>HMM map matching with Gaussian emission & shortest path transition.</td>
+              <td>The classical geometric baseline (Track B) and the transition backbone of our winning Hybrid Viterbi engine.</td>
+            </tr>
+            <tr>
+              <td><strong>VAE Posterior Collapse Blame</strong><br><span style="font-size:0.8rem;color:var(--text-dim);">Dai, Wang, & Wipf</span></td>
+              <td>ICML 2020</td>
+              <td>Local minima in deep decoders cause information truncation.</td>
+              <td>Diagnosed why our initial Track A model collapsed: the deep MDN GPS decoder caused $h_t$ to bypass stochastic $z_t$.</td>
+            </tr>
+            <tr>
+              <td><strong>DAgger</strong><br><span style="font-size:0.8rem;color:var(--text-dim);">Ross & Bagnell</span></td>
+              <td>AISTATS 2011</td>
+              <td>Dataset Aggregation: training students against expert relabeling.</td>
+              <td>Provided theoretical framework for relabeling 121.4M GPS fixes using offline HMM Viterbi to cut disconnected jumps by 20%.</td>
+            </tr>
+            <tr>
+              <td><strong>GRACE</strong><br><span style="font-size:0.8rem;color:var(--text-dim);">Zhu et al.</span></td>
+              <td>NeurIPS 2020</td>
+              <td>Graph Contrastive Learning with edge/feature dropout.</td>
+              <td>Powers Stage 0 pretraining of the RoadGAT encoder over OpenStreetMap line graphs.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Kaggle Runbook Summary -->
+    <section style="margin-bottom: 2rem;">
+      <div class="glass-card" style="border-left: 4px solid var(--accent-cyan);">
+        <h3 style="color: #fff; font-size: 1.3rem; margin-bottom: 0.5rem;">Running on Kaggle: Fast Reference (self_guide.md)</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
+          The project trained across chained 12-hour Kaggle T4x2 GPU sessions using 9 private datasets. Essential operational rules:
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; font-size: 0.85rem;">
+          <div style="background: rgba(0,0,0,0.3); padding: 0.85rem; border-radius: var(--radius-sm);">
+            <strong style="color: #67e8f9;">Windows Charmap Crash Guard:</strong>
+            <p style="color: var(--text-dim); margin-top: 0.2rem;">Always export <code>PYTHONIOENCODING=utf-8</code> and <code>PYTHONUTF8=1</code>, otherwise Kaggle CLI silent-truncates logs to 0 bytes.</p>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 0.85rem; border-radius: var(--radius-sm);">
+            <strong style="color: #a5b4fc;">Resume Chaining:</strong>
+            <p style="color: var(--text-dim); margin-top: 0.2rem;">Runs save checkpoints every 1,000 steps and reseed <code>alphaevolve-ckpt</code>, picking up seamlessly on weekly GPU quota resets.</p>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 0.85rem; border-radius: var(--radius-sm);">
+            <strong style="color: #6ee7b7;">Candidate Cache MMap:</strong>
+            <p style="color: var(--text-dim); margin-top: 0.2rem;">82.4M-row candidate arrays are memmapped from disk to keep resident RAM under the strict 30GB Kaggle ceiling.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="page-footer">
+    <p>AlphaEvolve Research Knowledge Portal &bull; Generated from live repository codebase & research logs.</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">Architecture: 4.77M Decoder-Light RSSM &bull; Porto 1.66M Trajectories &bull; <a href="https://github.com/Vineet5-Data/RL_in_AD/blob/master/README.md" target="_blank" rel="noopener">Codebase README</a> &bull; <a href="https://github.com/Vineet5-Data/RL_in_AD/blob/master/self_guide.md" target="_blank" rel="noopener">Kaggle Runbook</a> &bull; <a href="planet.html" style="color: #fbbf24; font-weight: 600;">🪐 PlaNet (Pixels) Guide</a> &bull; <a href="https://github.com/Vineet5-Data/rssm-planet-guide" target="_blank" rel="noopener" style="color: #a5b4fc;">GitHub Pages Repo</a></p>
+  </footer>
+
+  <!-- Interactive JavaScript Engine -->
+  <script>
+    // ==========================================
+    // MATHEMATICAL TYPESETTING ENGINE
+    // KaTeX CDN Auto-Render + Offline Semantic Parser
+    // ==========================================
+
+    function replaceFractions(s) {
+      let count = 0;
+      while (s.includes('\\frac') && count < 30) {
+        count++;
+        const idx = s.indexOf('\\frac');
+        const open1 = s.indexOf('{', idx);
+        if (open1 === -1) break;
+        let depth = 1, close1 = open1 + 1;
+        while (close1 < s.length && depth > 0) {
+          if (s[close1] === '{') depth++;
+          else if (s[close1] === '}') depth--;
+          close1++;
+        }
+        if (depth !== 0) break;
+        const arg1 = s.substring(open1 + 1, close1 - 1);
+
+        const open2 = s.indexOf('{', close1 - 1);
+        if (open2 === -1) break;
+        depth = 1;
+        let close2 = open2 + 1;
+        while (close2 < s.length && depth > 0) {
+          if (s[close2] === '{') depth++;
+          else if (s[close2] === '}') depth--;
+          close2++;
+        }
+        if (depth !== 0) break;
+        const arg2 = s.substring(open2 + 1, close2 - 1);
+
+        const replacement = `<span class="math-frac"><span class="math-frac-num">${arg1}</span><span class="math-frac-den">${arg2}</span></span>`;
+        s = s.substring(0, idx) + replacement + s.substring(close2);
+      }
+      return s;
+    }
+
+    function replaceSqrt(s) {
+      let count = 0;
+      while (s.includes('\\sqrt') && count < 20) {
+        count++;
+        const idx = s.indexOf('\\sqrt');
+        const open = s.indexOf('{', idx);
+        if (open === -1) break;
+        let depth = 1, close = open + 1;
+        while (close < s.length && depth > 0) {
+          if (s[close] === '{') depth++;
+          else if (s[close] === '}') depth--;
+          close++;
+        }
+        if (depth !== 0) break;
+        const inner = s.substring(open + 1, close - 1);
+        s = s.substring(0, idx) + `\u221A(${inner})` + s.substring(close);
+      }
+      return s;
+    }
+
+    function formatMathFallback(latex, isBlock) {
+      let s = latex.trim();
+      
+      // Clean display environment wrappers & spacing
+      s = s.replace(/\\begin\{aligned\}|\\end\{aligned\}/g, '');
+      s = s.replace(/\\\\/g, '<br>');
+      s = s.replace(/\\qquad/g, '&emsp;&emsp;');
+      s = s.replace(/\\quad/g, '&emsp;');
+      s = s.replace(/\\,|\\;|\\!/g, ' ');
+
+      // Protect escaped underscores (e.g. one\_hot) as &#95; so they are immune to subscript hijacking
+      s = s.replace(/\\_/g, '&#95;');
+
+      // Delimiters
+      s = s.replace(/\\left\(/g, '(').replace(/\\right\)/g, ')');
+      s = s.replace(/\\left\[/g, '[').replace(/\\right\]/g, ']');
+      s = s.replace(/\\left\\\{/g, '{').replace(/\\right\\\}/g, '}');
+      s = s.replace(/\\big[lr]?|\\Big[lr]?/g, '');
+
+      // Accents (e.g. \hat{y}, \hat y)
+      s = s.replace(/\\hat\{([^{}]+)\}/g, '<span class="math-accent">$1&#770;</span>');
+      s = s.replace(/\\hat\s*([a-zA-Z0-9])/g, '<span class="math-accent">$1&#770;</span>');
+
+      // Specific high-priority symbols before substrings
+      s = s.replace(/\\infty/g, '\u221E');
+      s = s.replace(/\\nabla/g, '\u2207');
+      s = s.replace(/\^\{\\top\}|\^\\top|\^T|\^\{T\}|\\top/g, '<sup class="math-sup">T</sup>');
+
+      // Functions & styles that wrap expressions
+      s = s.replace(/\\(operatorname|mathrm)\{([^{}]+)\}/g, '<span class="math-op">$2</span>');
+      s = s.replace(/\\(mathbf|boldsymbol)\{([^{}]+)\}/g, '<strong>$2</strong>');
+      s = s.replace(/\\text\{([^{}]+)\}/g, '<span style="font-style: normal;">$1</span>');
+      s = s.replace(/\\mathbb\{R\}/g, '<span class="math-bb">\u211D</span>');
+      s = s.replace(/\\mathbb\{([A-Z])\}/g, '<span class="math-bb">$1</span>');
+      s = s.replace(/\\mathcal\{L\}/g, '<span class="math-cal">\u2112</span>');
+      s = s.replace(/\\mathcal\{([A-Z])\}/g, '<span class="math-cal">$1</span>');
+
+      // Fractions and square roots
+      s = replaceFractions(s);
+      s = replaceSqrt(s);
+
+      // Big Operators
+      s = s.replace(/\\sum_\{([^{}]+)\}\^\{([^{}]+)\}/g, '<span class="math-op" style="font-size: 1.25em;">\u2211</span><sub class="math-sub">$1</sub><sup class="math-sup">$2</sup>');
+      s = s.replace(/\\sum_\{([^{}]+)\}\^([a-zA-Z0-9])/g, '<span class="math-op" style="font-size: 1.25em;">\u2211</span><sub class="math-sub">$1</sub><sup class="math-sup">$2</sup>');
+      s = s.replace(/\\sum_\{([^{}]+)\}/g, '<span class="math-op" style="font-size: 1.25em;">\u2211</span><sub class="math-sub">$1</sub>');
+      s = s.replace(/\\sum/g, '<span class="math-op" style="font-size: 1.25em;">\u2211</span>');
+
+      // Named math functions
+      s = s.replace(/\\argmax/g, '<span class="math-op">argmax</span>');
+      s = s.replace(/\\argmin/g, '<span class="math-op">argmin</span>');
+      s = s.replace(/\\softmax/g, '<span class="math-op">softmax</span>');
+      s = s.replace(/\\max/g, '<span class="math-op">max</span>');
+      s = s.replace(/\\min/g, '<span class="math-op">min</span>');
+      s = s.replace(/\\log/g, '<span class="math-op">log</span>');
+      s = s.replace(/\\ln/g, '<span class="math-op">ln</span>');
+      s = s.replace(/\\exp/g, '<span class="math-op">exp</span>');
+      s = s.replace(/\\sign/g, '<span class="math-op">sign</span>');
+      s = s.replace(/\\sg/g, '<span class="math-op">sg</span>');
+      s = s.replace(/\\KL/g, '<span class="math-op">KL</span>');
+      s = s.replace(/\\GRU/g, '<span class="math-op">GRU</span>');
+      s = s.replace(/\\symlog/g, '<span class="math-op">symlog</span>');
+      s = s.replace(/\\symexp/g, '<span class="math-op">symexp</span>');
+
+      // Greek Letters
+      s = s.replace(/\\alpha/g, '\u03B1');
+      s = s.replace(/\\beta/g, '\u03B2');
+      s = s.replace(/\\gamma/g, '\u03B3');
+      s = s.replace(/\\delta/g, '\u03B4');
+      s = s.replace(/\\theta/g, '\u03B8');
+      s = s.replace(/\\sigma/g, '\u03C3');
+      s = s.replace(/\\eta/g, '\u03B7');
+      s = s.replace(/\\lambda/g, '\u03BB');
+      s = s.replace(/\\mu/g, '\u03BC');
+      s = s.replace(/\\pi/g, '\u03C0');
+      s = s.replace(/\\ell/g, '\u2113');
+      s = s.replace(/\\tau/g, '\u03C4');
+
+      // Relational & Operator Symbols
+      s = s.replace(/\\\||\\parallel|\\Vert/g, '\u2225');
+      s = s.replace(/\\mid/g, ' | ');
+      s = s.replace(/\\cdot/g, ' \u22C5 ');
+      s = s.replace(/\\times/g, ' \u00D7 ');
+      s = s.replace(/\\in\b/g, ' <span class="math-rel">\u2208</span> ');
+      s = s.replace(/\\sim/g, ' <span class="math-rel">\u223C</span> ');
+      s = s.replace(/\\propto/g, ' <span class="math-rel">\u221D</span> ');
+      s = s.replace(/\\to|\\rightarrow/g, ' <span class="math-rel">\u2192</span> ');
+      s = s.replace(/\\perp/g, '\u22A5');
+      s = s.replace(/\\leq|\\le/g, ' \u2264 ');
+      s = s.replace(/\\geq|\\ge/g, ' \u2265 ');
+      s = s.replace(/\\neq/g, ' \u2260 ');
+      s = s.replace(/\\approx/g, ' \u2248 ');
+      s = s.replace(/\\\{/g, '{').replace(/\\\}/g, '}');
+
+      // Subscripts & Superscripts
+      for (let i = 0; i < 3; i++) {
+        s = s.replace(/_\{([^{}]+)\}/g, '<sub class="math-sub">$1</sub>');
+        s = s.replace(/\^\{([^{}]+)\}/g, '<sup class="math-sup">$1</sup>');
+      }
+      s = s.replace(/_([a-zA-Z0-9\u0370-\u03FF\u22A5])(?![^<]*>)/g, '<sub class="math-sub">$1</sub>');
+      s = s.replace(/\^([a-zA-Z0-9\u0370-\u03FF\u22A5])(?![^<]*>)/g, '<sup class="math-sup">$1</sup>');
+
+      // Italicize isolated single letters as variables, avoiding letters in HTML tags or entities
+      s = s.replace(/\b([a-zA-Z])\b(?![^<]*>)/g, '<var>$1</var>');
+
+      if (isBlock) {
+        return `<div class="math-display-render">${s}</div>`;
+      } else {
+        return `<span class="math-inline-render">${s}</span>`;
+      }
+    }
+
+    function renderMathFallback(root) {
+      if (!root) root = document.body;
+      const walker = document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode: function(node) {
+            const parentName = node.parentNode ? node.parentNode.nodeName.toLowerCase() : '';
+            if (['script', 'style', 'noscript', 'textarea', 'pre', 'code'].includes(parentName)) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            if (node.nodeValue && (node.nodeValue.includes('$') || node.nodeValue.includes('\\('))) {
+              return NodeFilter.FILTER_ACCEPT;
+            }
+            return NodeFilter.FILTER_SKIP;
+          }
+        },
+        false
+      );
+
+      const nodesToReplace = [];
+      while (walker.nextNode()) {
+        nodesToReplace.push(walker.currentNode);
+      }
+
+      nodesToReplace.forEach(node => {
+        let text = node.nodeValue;
+        let hasMath = false;
+        // Process $$...$$ display math
+        let replaced = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, formula) => {
+          hasMath = true;
+          return formatMathFallback(formula, true);
+        });
+        // Process $...$ inline math
+        replaced = replaced.replace(/\$([^\$\n]+?)\$/g, (match, formula) => {
+          hasMath = true;
+          return formatMathFallback(formula, false);
+        });
+
+        if (hasMath) {
+          const span = document.createElement('span');
+          span.className = 'math-rendered-container';
+          span.innerHTML = replaced;
+          if (node.parentNode) {
+            node.parentNode.replaceChild(span, node);
+          }
+        }
+      });
+    }
+
+    function renderMath(target) {
+      const el = target || document.body;
+      if (typeof window.renderMathInElement === 'function') {
+        try {
+          renderMathInElement(el, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+            ],
+            ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+            throwOnError: false,
+            macros: {
+              "\\sg": "\\operatorname{sg}",
+              "\\argmax": "\\operatorname{argmax}",
+              "\\softmax": "\\operatorname{softmax}",
+              "\\symlog": "\\operatorname{symlog}",
+              "\\symexp": "\\operatorname{symexp}",
+              "\\KL": "\\operatorname{KL}",
+              "\\GRU": "\\operatorname{GRU}"
+            }
+          });
+          return;
+        } catch (e) {
+          console.warn("KaTeX render failed, using semantic fallback:", e);
+        }
+      }
+      renderMathFallback(el);
+    }
+
+    // Tab switching logic
+    function openTab(evt, tabId) {
+      const parent = evt.target.closest('section');
+      const panes = parent.querySelectorAll('.tab-pane');
+      const btns = parent.querySelectorAll('.tab-btn');
+      
+      panes.forEach(p => p.classList.remove('active'));
+      btns.forEach(b => b.classList.remove('active'));
+      
+      const targetPane = document.getElementById(tabId);
+      targetPane.classList.add('active');
+      evt.target.classList.add('active');
+      renderMath(targetPane);
+    }
+
+    // Comprehensive File Catalog Data
+    const fileCatalog = [
+      {
+        path: "src/matcher.py",
+        cat: "core",
+        badge: "Core API",
+        eli5: "The production driver. Takes raw GPS fixes and runs offline batch map matching, real-time online streaming, or future route forecasting.",
+        tech: "Exposes Matcher(city). Methods: match_offline (hybrid Viterbi), match_online (hyb+topo streaming with closed-loop RSSM), predict (prior rollouts along road graph successors). Contains automatic city mode switch.",
+        gotcha: "Crucial finding: Hybrid mode wins on trained cities, but pure NK geometry must be used on unseen cities (OOD semantic transfer drops 17pp)."
+      },
+      {
+        path: "src/test_matcher.py",
+        cat: "core",
+        badge: "Regression Suite",
+        eli5: "Automated test suite verifying that matcher.py never regresses below pre-registered accuracy floors.",
+        tech: "Asserts Porto hybrid >= 0.83 (achieves 0.8679), Porto online >= 0.70 (achieves 0.8287), T-Drive NK fallback >= 0.75 (achieves 0.8544), and verifies predicted path continuity.",
+        gotcha: "Acts as an impenetrable quality gate preventing broken checkpoints from entering production."
+      },
+      {
+        path: "src/models/world_model2.py",
+        cat: "models",
+        badge: "World Model",
+        eli5: "The winning 'Decoder-Light' RSSM world model that solved posterior collapse.",
+        tech: "Defines RSSM2 (GRU transition + normalized prior/posterior), HeadsLight (RoadScorer + RewardScorer + z-only GPS decode), Critic, lambda_return, symlog, symexp. Supports dynamic 32x32 categorical latents.",
+        gotcha: "GPS decode is strictly z-only (blind to h_t). By removing the continuous MDN reconstruction decoder, h_t can no longer freeload and collapse is mathematically eliminated!"
+      },
+      {
+        path: "src/models/world_model.py",
+        cat: "models",
+        badge: "RSSM Base",
+        eli5: "The original Stage 2 RSSM code containing DreamerV3 discrete categorical sampling, unimix, and free bits.",
+        tech: "Implements RSSM, straight_through_sample (hard forward, soft Jacobian backward), _mixed_probs (1% unimix), kl_categorical_pergroup, free_bits_kl (1-nat free bits with 0.5 dyn / 0.1 rep weighting), and RoadScorer.",
+        gotcha: "Contains the legacy MDN residual GPS head that caused Track A's posterior collapse. Maintained for provenance and imports."
+      },
+      {
+        path: "src/models/gps_encoder.py",
+        cat: "models",
+        badge: "P1a Encoder",
+        eli5: "Cross-modal transformer that fuses GPS sequences with candidate road tokens.",
+        tech: "CrossModalLayer: temporal self-attention over trajectory + cross-attention over K candidate road tokens. Stage1Encoder: MGM (Masked GPS Modeling), InfoNCE contrastive road alignment, next-fix prediction.",
+        gotcha: "Implements geo_mask: zeroes d_perp on 30% of fixes on input while target keeps real d_perp, forcing the model to learn spatiotemporal context instead of memorizing geometry."
+      },
+      {
+        path: "src/models/road_encoder.py",
+        cat: "models",
+        badge: "P1b Encoder",
+        eli5: "Graph Attention Network (RoadGAT) that computes rich 256-dim embeddings for road segments.",
+        tech: "RoadGAT: 2 GATConv layers over line graph turn edges with 13 continuous attributes (length, curvature, speed, bearing) + highway category embeddings. ProjectionHead for NT-Xent contrastive loss.",
+        gotcha: "Turn edges are directed and prune immediate U-turns, enforcing physical driving feasibility."
+      },
+      {
+        path: "src/training/stage2r.py",
+        cat: "train",
+        badge: "Winning Trainer",
+        eli5: "The master training pipeline for the winning Decoder-Light world model and DAgger relabeling.",
+        tech: "Trains RSSM2 + HeadsLight on real sequences with soft road CE, prior auxiliary loss, and symlog physics reward regression. Implements P0b instrumentation (tgt_ent, road_ex, kl_act) and multi-city training.",
+        gotcha: "Supports --viterbi-alpha and --viterbi-dir to blend offline HMM expert pseudo-labels, cutting disconnected transitions by 20%."
+      },
+      {
+        path: "src/training/stage3.py",
+        cat: "train",
+        badge: "RL Actor-Critic",
+        eli5: "Dreamer-style actor-critic trained on imagined rollouts inside the world model.",
+        tech: "Rolls out prior dynamics into the future without real data, predicts rewards via RewardScorer, estimates lambda-returns with Critic, and optimizes RoadScorer actor policy.",
+        gotcha: "Closed with formal proof: Goodhart's law overoptimization means step 0 is optimal; any RL step degrades matching accuracy compared to the supervised road head."
+      },
+      {
+        path: "src/training/stage0.py",
+        cat: "train",
+        badge: "Graph Pretrain",
+        eli5: "Self-supervised graph contrastive pretraining for road segments (GRACE algorithm).",
+        tech: "Augments road line graph via feature dropout (p_f=0.3) and edge dropout (p_e=0.3). Minimizes NT-Xent loss with in-batch negatives to align topological road representations.",
+        gotcha: "Runs entirely without GPS or labels; learns road physics directly from OpenStreetMap geometry."
+      },
+      {
+        path: "src/training/stage1.py",
+        cat: "train",
+        badge: "Cross-Modal Pretrain",
+        eli5: "Self-supervised pretraining aligning raw GPS traces with road candidate embeddings.",
+        tech: "Optimizes Masked GPS Modeling (Huber loss), InfoNCE contrastive road alignment, and next-point prediction using frozen Stage 0 road embeddings.",
+        gotcha: "Windows segfault guard: pyarrow must always be imported before torch due to native C++ library load order conflicts."
+      },
+      {
+        path: "src/training/rewards.py",
+        cat: "train",
+        badge: "Physics Rewards",
+        eli5: "Computes 6 physical driving rewards per candidate road without human labels.",
+        tech: "Calculates r_dist (-d_perp / sigma), r_head (heading alignment cos diff), r_oneway (-5 penalty if driving wrong way), r_speed (quadratic penalty for speeding), r_topo (+2 if connected), r_smooth. SuccessorTable for O(log E) turn lookups.",
+        gotcha: "Weights are calibrated so topology and heading constraints dominate, preventing unrealistic off-road choices."
+      },
+      {
+        path: "src/training/relabel_viterbi.py",
+        cat: "train",
+        badge: "DAgger Relabeling",
+        eli5: "Offline HMM Viterbi pseudo-labeling tool that labeled 121.4M fixes across 5 cities.",
+        tech: "Runs Newson-Krumm Dijkstra HMM Viterbi on multi-core CPU, outputting .npy arrays of expert-chosen segment IDs. Sharded, resumable, and zero GPU quota required.",
+        gotcha: "Employs RouteDist memo cap (clearing cache if len > 20,000) to prevent RAM explosion when scaling to city-scale coverage."
+      },
+      {
+        path: "src/hmm_baseline/baseline_hmm.py",
+        cat: "hmm",
+        badge: "Classical Baseline",
+        eli5: "Canonical Newson & Krumm (2009) Hidden Markov Model map matcher.",
+        tech: "Gaussian emission on d_perp, shortest-path Dijkstra route transition, log-space Viterbi decode. Memoized RouteDist. Also supports forward-filtering rollout for trajectory forecasting.",
+        gotcha: "Achieves 84.5% offline matching with zero training; forms the essential geometric foundation of our hybrid engine."
+      },
+      {
+        path: "src/dataset/candidates.py",
+        cat: "data",
+        badge: "Spatial Indexing",
+        eli5: "Fast spatial candidate retrieval using Shapely STRtree indexing over metric UTM projections.",
+        tech: "CandidateIndex.query: finds road segments within radius r=50m, computes perpendicular distance d_perp, fractional offset, heading, speed limit, one-way flag. query_batch for vectorized dataset precomputing.",
+        gotcha: "Converts lat/lon (WGS84 EPSG:4326) to exact metric UTM projection so distance calculations are metric meters, not distorted degrees."
+      },
+      {
+        path: "src/dataset/trajectories.py",
+        cat: "data",
+        badge: "Data Pipeline",
+        eli5: "PyTorch dataset that batches variable-length trajectories with road candidates.",
+        tech: "TrajectoryGraphDataset + collate_fn. Features contiguous prefix loading (load_source_df with skip_trajs), memory-mapped candidate cache loading (_memmap_cache on .npy), and slot permutation per epoch.",
+        gotcha: "Crucial Kaggle OOM fix: memory-mapping the 82M-row candidate arrays keeps resident RAM under 21GB, avoiding silent Linux SIGKILL 9."
+      },
+      {
+        path: "src/dataset/config.py",
+        cat: "data",
+        badge: "Data Config",
+        eli5: "Typed configuration dataclasses for sequences, candidate retrieval, rewards, and CRS definitions.",
+        tech: "SequenceConfig, RetrievalConfig (radius=50m, K=10), RewardConfig, and CITY_UTM_CRS mappings.",
+        gotcha: "Keeps configuration decoupled and unified across all training and evaluation scripts."
+      },
+      {
+        path: "src/roadgraph/build.py",
+        cat: "data",
+        badge: "OSM Download",
+        eli5: "Downloads drivable street networks from OpenStreetMap using OSMnx with spatial tiling.",
+        tech: "download_graph_tiled: breaks large metropolitan bounding boxes into tiles to prevent Overpass API timeouts. enrich_graph: adds bearing, edge length, and speed limits.",
+        gotcha: "Tiling handles water and empty sectors gracefully without crashing the pipeline."
+      },
+      {
+        path: "src/roadgraph/linegraph.py",
+        cat: "data",
+        badge: "Dual Graph",
+        eli5: "Builds turn connectivity between street segments (the line graph).",
+        tech: "build_turn_edges: connects segment e=(u,v) to e'=(v,w) where a vehicle can legally transition. Prunes immediate U-turns (w==u).",
+        gotcha: "Transforms edge-transition map matching into a standard node-classification graph representation."
+      },
+      {
+        path: "src/preprocessing/clean.py",
+        cat: "data",
+        badge: "GPS Cleaning",
+        eli5: "Filters GPS noise, speed spikes, duplicate timestamps, and splits long gaps into distinct trips.",
+        tech: "Calculates speeds between consecutive fixes; drops points where speed > 45 m/s (162 km/h) or dt < 0. Splits trips on temporal gaps > 120s.",
+        gotcha: "Garbage in, garbage out: robust filtering is the reason self-supervised learning can succeed without labels."
+      },
+      {
+        path: "src/preprocessing/parsers.py",
+        cat: "data",
+        badge: "Multi-City Parsers",
+        eli5: "Standardized parsers for diverse global fleet GPS formats.",
+        tech: "Parsers for Porto (CSV with JSON polylines), Beijing T-Drive (space-delimited txt), San Francisco Cabspotting, Rome Taxi, and Microsoft Geolife (PLT format).",
+        gotcha: "Unifies timestamps to UTC unix-seconds and normalizes coordinate conventions (handling lon-lat vs lat-lon inversions)."
+      },
+      {
+        path: "src/evals/eval_research2.py",
+        cat: "eval",
+        badge: "Master Eval",
+        eli5: "The authoritative evaluation harness measuring map matching, prediction horizons, and latent health.",
+        tech: "Evaluates checkpoints on held-out splits. Computes tolerant match@1, path prediction hit@1/5/15, coarse GPS decode error (cl_gps), KL divergence, and latent entropy.",
+        gotcha: "Uses exact held-out splits (n=500 trajectories / 20k+ fixes) to maintain rigorous comparability across all ablation ladders."
+      },
+      {
+        path: "src/evals/diag_fork_kl_correlation.py",
+        cat: "eval",
+        badge: "Diagnostic Probe",
+        eli5: "Investigates whether road forks (intersections) cause higher KL divergence in categorical latents.",
+        tech: "Correlates per-fix active group fraction against road candidate target entropy.",
+        gotcha: "Proved that low kl_act was not caused by a lack of forks; active units remain decoupled from static candidate crowding."
+      },
+      {
+        path: "src/evals/eval_ood_tdrive.py",
+        cat: "eval",
+        badge: "OOD Benchmark",
+        eli5: "Evaluates zero-shot cross-city transfer from Porto to Beijing (T-Drive).",
+        tech: "Evaluates road-head accuracy and hybrid vs NK Viterbi performance on 500 Beijing taxi trajectories.",
+        gotcha: "Demonstrated the -17pp zero-shot drop, cementing the requirement for automatic geometric fallback on unseen cities."
+      }
+    ];
+
+    // Render File Cards
+    function renderFileCards(cards) {
+      const grid = document.getElementById('fileGrid');
+      grid.innerHTML = '';
+      if (cards.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim); padding: 3rem;">No matching files found.</div>';
+        return;
+      }
+
+      cards.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'file-card';
+        card.innerHTML = `
+          <div class="file-card-header">
+            <span class="file-path">${f.path}</span>
+            <span class="file-category-badge cat-${f.cat}">${f.badge}</span>
+          </div>
+          <div class="file-eli5">${f.eli5}</div>
+          <div class="file-tech-details">
+            <p><strong>Technical Mechanics:</strong> ${f.tech}</p>
+            ${f.gotcha ? `<div class="file-gotcha"><strong>⚠️ Gotcha / Insight:</strong> ${f.gotcha}</div>` : ''}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    let activeCategory = 'all';
+
+    function setFileFilter(cat) {
+      activeCategory = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      filterFiles();
+    }
+
+    function filterFiles() {
+      const q = document.getElementById('fileSearch').value.toLowerCase();
+      const filtered = fileCatalog.filter(f => {
+        const matchesCat = activeCategory === 'all' || f.cat === activeCategory;
+        const matchesQuery = f.path.toLowerCase().includes(q) ||
+                             f.eli5.toLowerCase().includes(q) ||
+                             f.tech.toLowerCase().includes(q) ||
+                             (f.gotcha && f.gotcha.toLowerCase().includes(q));
+        return matchesCat && matchesQuery;
+      });
+      renderFileCards(filtered);
+    }
+
+    // Initialize File Cards
+    renderFileCards(fileCatalog);
+
+    // Interactive RSSM Simulator Logic
+    let simStepCount = 0;
+    let simMode = 'post'; // 'post' or 'prior'
+    const roadNames = [
+      "Rua de Santa Catarina (Primary)",
+      "Avenida dos Aliados (Trunk)",
+      "Rua de Fernandes Tomás (Secondary)",
+      "Praça da Liberdade (Secondary)",
+      "Rua de Passos Manuel (Residential)",
+      "Rua de Sá da Bandeira (Tertiary)",
+      "Rua Formosa (One-way)",
+      "Rua do Bonjardim (Residential)",
+      "Avenida da Boavista (Secondary)",
+      "Rua das Flores (Pedestrian link)"
+    ];
+
+    function initLatentGrid() {
+      const container = document.getElementById('latentGrid');
+      container.innerHTML = '';
+      for (let g = 0; g < 32; g++) {
+        const activeIdx = Math.floor(Math.random() * 32);
+        for (let c = 0; c < 32; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'latent-cell';
+          cell.id = `cell-${g}-${c}`;
+          if (c === activeIdx) {
+            cell.classList.add(simMode === 'post' ? 'active' : 'prior');
+          }
+          container.appendChild(cell);
+        }
+      }
+    }
+
+    function updateLatentGrid() {
+      for (let g = 0; g < 32; g++) {
+        const activeIdx = Math.floor(Math.random() * 32);
+        for (let c = 0; c < 32; c++) {
+          const cell = document.getElementById(`cell-${g}-${c}`);
+          if (cell) {
+            cell.className = 'latent-cell';
+            if (c === activeIdx) {
+              cell.classList.add(simMode === 'post' ? 'active' : 'prior');
+            }
+          }
+        }
+      }
+    }
+
+    function updateCandidates() {
+      const list = document.getElementById('candidateList');
+      list.innerHTML = '';
+      
+      // Generate synthetic softmax probabilities
+      let rawScores = Array.from({length: 6}, () => Math.random() * 2 + 1);
+      rawScores[0] += 3.5; // winner bias
+      const sum = rawScores.reduce((a, b) => a + b, 0);
+      const probs = rawScores.map(s => s / sum);
+
+      for (let i = 0; i < 6; i++) {
+        const item = document.createElement('div');
+        item.className = `road-candidate-item ${i === 0 ? 'winner' : ''}`;
+        const pct = Math.round(probs[i] * 100);
+        item.innerHTML = `
+          <div>
+            <div style="font-weight: 600;">${roadNames[(simStepCount + i) % roadNames.length]}</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim);">Slot #${i} &bull; d_perp = ${(5 + i * 4.2).toFixed(1)}m</div>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <div class="prob-bar-container">
+              <div class="prob-bar-fill" style="width: ${pct}%;"></div>
+            </div>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 700; width: 38px; text-align: right;">${pct}%</span>
+          </div>
+        `;
+        list.appendChild(item);
+      }
+    }
+
+    function setSimMode(m) {
+      simMode = m;
+      document.getElementById('btn-mode-post').classList.toggle('active', m === 'post');
+      document.getElementById('btn-mode-prior').classList.toggle('active', m === 'prior');
+      updateLatentGrid();
+      
+      const explain = document.getElementById('sim-explain-text');
+      if (m === 'post') {
+        explain.innerHTML = `In <strong>Posterior mode</strong>, GPS observation $z_{1,t}$ is fused with $h_{t-1}$ to sample categorical latents $z_t$. Latents represent true spatial state conditioned on real satellite fixes.`;
+      } else {
+        explain.innerHTML = `In <strong>Prior mode (Imagination)</strong>, no GPS exists! Latents $z_t \\sim p(z_t \\mid h_t)$ are rolled out into the future purely based on vehicle momentum and road network topology.`;
+      }
+      renderMath(explain);
+    }
+
+    function simStep() {
+      simStepCount++;
+      document.getElementById('sim-step-badge').innerText = `Timestep t = ${simStepCount}`;
+      document.getElementById('sim-t-num').innerText = simStepCount;
+      
+      // Jitter stats
+      const kl = (22.5 + Math.random() * 1.5).toFixed(1);
+      const ent = (14.8 + Math.random() * 0.5).toFixed(2);
+      document.getElementById('statKL').innerText = `${kl} nats`;
+      document.getElementById('statEnt').innerText = ent;
+
+      updateLatentGrid();
+      updateCandidates();
+    }
+
+    function simReset() {
+      simStepCount = 0;
+      document.getElementById('sim-step-badge').innerText = `Timestep t = 0`;
+      document.getElementById('sim-t-num').innerText = '0';
+      initLatentGrid();
+      updateCandidates();
+    }
+
+    // Initialize Simulator
+    initLatentGrid();
+    updateCandidates();
+    setSimMode('post');
+
+    // Run math typesetting on load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMath();
+    });
+    window.addEventListener('load', () => {
+      renderMath();
+    });
+    setTimeout(() => {
+      renderMath();
+    }, 150);
+
+    // Active Navigation Scroll Spy
+    const navAnchors = document.querySelectorAll('.nav-links a');
+    const pageSections = document.querySelectorAll('section[id]');
+
+    function updateNavScrollSpy() {
+      const scrollPos = window.scrollY + 160;
+      pageSections.forEach(sec => {
+        const top = sec.offsetTop;
+        const height = sec.offsetHeight;
+        const id = sec.getAttribute('id');
+        if (scrollPos >= top && scrollPos < top + height) {
+          navAnchors.forEach(link => {
+            const isMatch = link.getAttribute('href') === `#${id}`;
+            link.classList.toggle('active', isMatch);
+            if (isMatch) {
+              // Ensure active item stays in view inside horizontally scrolling nav on mobile
+              link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+          });
+        }
+      });
+    }
+
+    window.addEventListener('scroll', updateNavScrollSpy, { passive: true });
+  </script>
+</body>
+</html>

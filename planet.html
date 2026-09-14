@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RSSM and PlaNet — an illustrated explanation</title>
+<style>
+:root{--ink:#172f3a;--muted:#516773;--blue:#2165ad;--bluewash:#edf5ff;--green:#08786d;--greenwash:#eaf8f4;--gold:#98680d;--line:#d5e2e6;--paper:#fff;--bg:#f5f8f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:1160px;margin:auto;padding:54px 28px 72px}h1{font-size:clamp(34px,5vw,58px);line-height:1.08;letter-spacing:-2px;max-width:920px;margin:10px 0 20px}h2{font-size:29px;line-height:1.3;letter-spacing:-.6px;margin:0 0 18px}h3{font-size:21px;line-height:1.4;margin:25px 0 8px}p{margin:0 0 16px}a{color:var(--blue);text-underline-offset:3px}strong{font-weight:700}.eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:12px;font-weight:750;color:var(--green)}.intro{font-size:21px;max-width:930px}.lead{font-size:19px}.small,figcaption{font-size:14px;color:var(--muted)}.section{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:30px;margin:24px 0}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}.summary div{padding:20px;border-radius:13px;background:var(--paper);border:1px solid var(--line)}.summary b{display:block;color:var(--green);font-size:21px}.summary span{font-size:16px}.nav{display:flex;flex-wrap:wrap;gap:10px 20px;font-size:15px;margin:25px 0}.nav a{text-decoration:none;border-bottom:1px solid var(--line)}.callout{background:var(--greenwash);border-left:4px solid var(--green);padding:17px 20px;border-radius:0 10px 10px 0;margin:20px 0}.note{background:#fff8e8;border-left-color:#bb8823}.source{font-size:13px;color:var(--muted);margin-top:18px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:15px}th,td{text-align:left;vertical-align:top;padding:14px 12px;border-bottom:1px solid var(--line)}th{background:#f3f7f8}td:first-child{font-weight:650;width:20%}td small{font-weight:400;display:block;color:var(--muted)}.formula{font-family:"Cambria Math","Segoe UI",serif;background:#f5f8fa;border-radius:8px;padding:12px 18px;overflow:auto;font-size:19px}.cols{display:grid;grid-template-columns:1fr 1fr;gap:26px}.step{display:grid;grid-template-columns:38px 1fr;gap:12px;margin:18px 0}.step-number{height:31px;width:31px;border-radius:50%;background:var(--bluewash);color:var(--blue);display:grid;place-items:center;font-weight:750;font-size:15px}.step p{margin:0}.crop{aspect-ratio:4.24;overflow:hidden;background:#111;border-radius:10px}.crop img{width:100%;height:auto;display:block}.reference-zoom{overflow-x:auto}.reference-zoom .crop{min-width:780px}figure{margin:18px 0}figcaption{margin-top:10px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:17px 0}button{font:inherit;cursor:pointer;border:1px solid #b7cbd3;border-radius:9px;padding:9px 15px;background:white;color:var(--ink);font-size:15px}button:hover{background:#f0f6f9}button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:white}button:focus-visible,svg [role=button]:focus-visible,a:focus-visible{outline:3px solid #e9a51c;outline-offset:4px}#mode-note{padding:12px 16px;background:var(--bluewash);border-radius:9px;font-size:15px;min-height:70px}.diagram-scroll{overflow-x:auto;margin:8px -8px}.diagram-scroll svg{min-width:780px;width:100%;height:auto;display:block}svg text{font-family:system-ui,"Segoe UI",sans-serif;fill:var(--ink)}svg .title{font-size:18px;font-weight:700}svg .detail{font-size:15px}svg .tiny{font-size:13px;fill:var(--muted)}svg rect.node{fill:var(--bluewash);stroke:#82a9c9;stroke-width:1.5}svg .prior rect{fill:var(--greenwash);stroke:#6fac9c}svg .head rect{fill:#f4f7f8;stroke:#9db6bf}svg .edge{fill:none;stroke:#526d7b;stroke-width:2.2}svg .sample-prior{stroke:var(--green)}svg .sample-posterior{stroke:var(--blue)}svg .kl{stroke:#b48738;stroke-width:2;stroke-dasharray:5 5;fill:none}svg .selected rect{stroke:#e29c17;stroke-width:3.8}svg [role=button]{cursor:pointer}svg [role=button]:hover rect{stroke-width:3}svg .sample-prior{opacity:.18}#rssm-diagram.imagining .observe-only{opacity:.16}#rssm-diagram.imagining .sample-prior{opacity:1}#rssm-diagram.imagining .sample-posterior{opacity:.13}#rssm-diagram.imagining .decoder-line{opacity:.2}.module-buttons{display:flex;flex-wrap:wrap;gap:7px}.module-buttons button{font-size:13px;padding:7px 11px}.explanation{border:1px solid var(--line);border-radius:12px;background:#fafcfc;padding:19px 22px;margin-top:14px;min-height:155px}.explanation h3{margin:0 0 7px}.explanation p{margin:0;font-size:16px}.paper-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.paper-grid article{padding:20px;border:1px solid var(--line);border-radius:12px}.paper-grid h3{margin-top:0}.paper-grid p:last-child{margin-bottom:0}li{margin-bottom:8px}.plain-flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:16px;margin:20px 0}.plain-flow b{border:1px solid var(--line);border-radius:8px;padding:10px 13px;background:#f7fafb}.print-button{font-size:13px}.footer{color:var(--muted);font-size:14px;margin-top:28px}
+@media(max-width:750px){main{padding:30px 15px}.section{padding:21px 17px;border-radius:13px}.summary,.cols,.paper-grid{grid-template-columns:1fr}.summary{gap:9px}.summary div{padding:14px 17px}h2{font-size:25px}.intro{font-size:19px}.reference-zoom .crop{min-width:900px}th,td{padding:10px 8px}body{font-size:16px}}
+@media print{body{background:white;font-size:11pt}main{max-width:none;padding:0}.toolbar,.module-buttons,.nav,.print-button{display:none}.section{break-inside:avoid;border-radius:0;padding:14px;margin:14px 0}.diagram-scroll svg{min-width:0}.explanation{min-height:0}.crop{min-width:0!important}.summary{grid-template-columns:repeat(3,1fr)}h1{font-size:34pt}.source a{color:inherit}}
+</style>
+</head>
+<body>
+<div style="background: #0e1526; color: #cbd5e1; padding: 12px 20px; font-size: 14px; text-align: center; border-bottom: 2px solid #06b6d4; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+  <span>🚀 <strong>AlphaEvolve Research Portal:</strong> Looking for the Fleet GPS, DreamerV3 World Model, Simulator & Math Guide?</span>
+  <a href="index.html" style="color: #67e8f9; font-weight: 700; text-decoration: underline; background: rgba(6, 182, 212, 0.15); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.4);">Open AlphaEvolve &amp; DreamerV3 Guide &rarr;</a>
+</div>
+<main>
+<header>
+<div class="eyebrow">A beginner’s guide · based on Hafner et al.</div>
+<h1>RSSM predicts the world.<br>PlaNet uses it to choose actions.</h1>
+<p class="intro">The “transition model,” “observation model,” and “reward model” are learned parts with different jobs. Together, they let an agent build a small internal simulator from experience.</p>
+<div class="summary">
+<div><b>Transition</b><span>What could happen next if I take this action?</span></div>
+<div><b>Observation</b><span>What would that internal state look like as an image?</span></div>
+<div><b>Reward</b><span>What task score should I expect in that state?</span></div>
+</div>
+<nav class="nav" aria-label="Guide contents">
+<a href="#picture">Your picture</a><a href="#state">What is a state?</a><a href="#diagram">Explore RSSM</a><a href="#terms">Model names</a><a href="#learning">How it learns</a><a href="#planning">How it acts</a><a href="#paper">The whole paper</a>
+</nav>
+</header>
+
+<section class="section" id="picture">
+<h2>First, map your picture to the paper</h2>
+<p>The upper <strong>World Model Training</strong> section in your image is a useful guide. Its repeated columns show the <strong>same networks applied at successive time steps</strong>, with shared learned parameters.</p>
+<figure>
+<div class="reference-zoom"><div class="crop"><img src="natural-dreamer-reference.png" alt="The upper world-model section of the user's Dreamer training diagram. It shows a recurrent model, prior net, posterior net, encoder, reward model, continuation model, and decoder repeated over time."></div></div>
+<figcaption>Upper section of your supplied image, displayed with the lower section hidden. <a href="natural-dreamer-reference.png">Open the full original image</a> to zoom in.</figcaption>
+</figure>
+<div class="callout note"><strong>Two adjustments for the original PlaNet paper:</strong> ignore the “continue model” when reading this as PlaNet; it belongs to the later Dreamer world-model setup. Also, “full state” means recurrent memory plus <em>one sampled stochastic state</em>—it does not mean concatenating both the prior and posterior. The actor and critic below are part of the later Dreamer agent.</div>
+<p class="source">Sources: <a href="https://arxiv.org/pdf/1811.04551#page=4">PlaNet §3, Eq. 4</a>; <a href="https://arxiv.org/html/2301.04104v2">DreamerV3, world model learning</a>.</p>
+</section>
+
+<section class="section" id="state">
+<h2>What is the model trying to remember?</h2>
+<p>Imagine controlling a cart with a pole attached. You want to swing the pole upright and balance it. Your input is a camera image; your action moves the cart left or right.</p>
+<p>One image tells you where the pole appears to be, but may not tell you whether it is moving left or right. The agent needs a memory of earlier images and actions.</p>
+<div class="cols">
+<div><h3>Memory: h</h3><p>The recurrent network carries useful information forward through time. For the same inputs and parameters, its update is deterministic. It is a learned memory—not a guarantee that every past detail is preserved.</p></div>
+<div><h3>Stochastic state: z</h3><p>A sample from a learned distribution represents the current situation and uncertainty about it. It allows different possible futures. It is more than arbitrary noise added to the system.</p></div>
+</div>
+<p class="formula">Full latent state = (h, z)</p>
+<p><strong>Latent</strong> means these are internal learned numbers, not raw pixels. Some may encode information useful for position or motion, but they do not come with human-readable labels such as “pole speed.”</p>
+<p class="small">Notation: this guide uses z for the stochastic component to match Dreamer terminology. In the RSSM equations of the PlaNet paper, that component is called s. Thus our (h, z) corresponds to the paper’s (h, s). A subscript t means the current time step.</p>
+</section>
+
+<section class="section" id="diagram">
+<h2>Follow one RSSM step</h2>
+<p>Select a mode, then select a box to see its role. <strong>Observing</strong> uses the real image to estimate the current state. <strong>Imagining</strong> predicts a future state without a new image.</p>
+<div class="toolbar" aria-label="RSSM mode">
+<button type="button" id="observe-button" aria-pressed="true">Observe a real image</button>
+<button type="button" id="imagine-button" aria-pressed="false">Imagine the next step</button>
+</div>
+<div id="mode-note" role="status" aria-live="polite">With a real image, sample z from the posterior q. The prior p is also computed during training and compared with the posterior through KL divergence.</div>
+<div class="diagram-scroll">
+<svg id="rssm-diagram" viewBox="0 0 1100 535" aria-label="Interactive RSSM diagram showing memory, prior, posterior, observation encoding, full latent state, and prediction heads.">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#526d7b"/></marker></defs>
+<path class="edge" d="M205 255 H245" marker-end="url(#arrow)"/>
+<path class="edge" d="M450 255 H485 V114 H535" marker-end="url(#arrow)"/>
+<path class="edge observe-only" d="M450 255 H485 V374 H535" marker-end="url(#arrow)"/>
+<path class="edge observe-only" d="M450 413 H535" marker-end="url(#arrow)"/>
+<path class="edge" d="M347 210 V30 H970 V210" marker-end="url(#arrow)"/>
+<text x="646" y="21" text-anchor="middle" class="tiny">Memory h also enters the full state</text>
+<path class="edge sample-prior" d="M760 114 H816 V237 H865" marker-end="url(#arrow)"/>
+<path class="edge sample-posterior" d="M760 400 H816 V273 H865" marker-end="url(#arrow)"/>
+<text x="796" y="178" class="tiny sample-prior" text-anchor="middle">sample p</text>
+<text x="797" y="329" class="tiny sample-posterior" text-anchor="middle">sample q</text>
+<path class="kl observe-only" d="M647 158 V219 M647 278 V350"/>
+<text x="647" y="243" class="tiny observe-only" text-anchor="middle">KL compares q and p</text>
+<text x="647" y="263" class="tiny observe-only" text-anchor="middle">(training only)</text>
+<path class="edge" d="M970 300 V377" marker-end="url(#arrow)"/>
+
+<g data-module="transition" role="button" tabindex="0" aria-label="Previous state and action, input to the transition model">
+<rect class="node" x="20" y="210" width="185" height="90" rx="10"/>
+<text x="112" y="243" class="title" text-anchor="middle">Previous state</text>
+<text x="112" y="269" class="detail" text-anchor="middle">+ previous action</text></g>
+
+<g data-module="memory" role="button" tabindex="0" aria-label="Recurrent model updates deterministic memory">
+<rect class="node" x="245" y="210" width="205" height="90" rx="10"/>
+<text x="347" y="242" class="title" text-anchor="middle">Recurrent model</text>
+<text x="347" y="271" class="detail" text-anchor="middle">Update memory h</text></g>
+
+<g class="prior" data-module="prior" role="button" tabindex="0" aria-label="Prior predicts stochastic state without a new image">
+<rect class="node" x="535" y="70" width="225" height="88" rx="10"/>
+<text x="647" y="102" class="title" text-anchor="middle">Prior net</text>
+<text x="647" y="129" class="detail" text-anchor="middle">p(z | h): predict</text></g>
+
+<g class="observe-only" data-module="posterior" role="button" tabindex="0" aria-label="Posterior estimates the stochastic state from memory and current image">
+<rect class="node" x="535" y="350" width="225" height="100" rx="10"/>
+<text x="647" y="382" class="title" text-anchor="middle">Posterior net</text>
+<text x="647" y="411" class="detail" text-anchor="middle">q(z | h, image): infer</text>
+<text x="647" y="435" class="tiny" text-anchor="middle">Uses the real observation</text></g>
+
+<g class="observe-only" data-module="encoder" role="button" tabindex="0" aria-label="Encoder extracts features from the real image">
+<rect class="node" x="245" y="380" width="205" height="66" rx="10"/>
+<text x="347" y="407" class="title" text-anchor="middle">Image → Encoder</text>
+<text x="347" y="430" class="tiny" text-anchor="middle">Extract visual features</text></g>
+
+<g data-module="state" role="button" tabindex="0" aria-label="Full latent state contains memory and one stochastic sample">
+<rect class="node" x="865" y="210" width="210" height="90" rx="10"/>
+<text x="970" y="241" class="title" text-anchor="middle">Full state: (h, z)</text>
+<text id="state-source" x="970" y="270" class="detail" text-anchor="middle">z sampled from q</text></g>
+
+<g class="head" data-module="heads" role="button" tabindex="0" aria-label="Prediction heads decode an image and predict reward from the full state">
+<rect class="node" x="865" y="377" width="210" height="112" rx="10"/>
+<text x="970" y="407" class="title" text-anchor="middle">Prediction heads</text>
+<text x="970" y="438" class="detail decoder-line" text-anchor="middle">Decoder → image</text>
+<text x="970" y="466" class="detail" text-anchor="middle">Reward model → score</text></g>
+<text x="20" y="507" class="tiny">Recurrent model + prior net = the generative transition.</text>
+<text x="20" y="526" class="tiny">Repeat these same networks at each time step; parameters are shared.</text>
+</svg>
+</div>
+<div class="module-buttons" aria-label="Explain a model component">
+<button type="button" data-module-button="transition" aria-pressed="true">Transition</button>
+<button type="button" data-module-button="memory" aria-pressed="false">Memory</button>
+<button type="button" data-module-button="prior" aria-pressed="false">Prior</button>
+<button type="button" data-module-button="encoder" aria-pressed="false">Encoder</button>
+<button type="button" data-module-button="posterior" aria-pressed="false">Posterior</button>
+<button type="button" data-module-button="state" aria-pressed="false">Full state</button>
+<button type="button" data-module-button="heads" aria-pressed="false">Prediction heads</button>
+</div>
+<div class="explanation" aria-live="polite"><h3 id="module-title">Transition: the internal simulator</h3><p id="module-text">In RSSM, the transition has two parts: the recurrent model updates memory from the previous memory, stochastic state, and action; the prior net predicts a distribution over the new stochastic state. Together they describe what might happen after an action.</p></div>
+<p class="source">Simplified from <a href="https://arxiv.org/pdf/1811.04551#page=4">PlaNet §3, Eq. 4</a>. KL is a training comparison, not a forward data-flow connection between the two networks.</p>
+</section>
+
+<section class="section" id="terms">
+<h2>What each “model” means</h2>
+<p>A model here is a learned mathematical mapping, usually implemented by a neural network. It produces a prediction or the parameters of a probability distribution. These components cooperate and are trained together.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Paper term</th><th>Label in your image</th><th>Input → output</th><th>Cart-and-pole example</th></tr></thead>
+<tbody>
+<tr><td>Transition model<small>Generative dynamics</small></td><td>Recurrent model + prior net</td><td>Previous (h, z) and action → new h and a distribution for new z.</td><td>“If I push right, how might the cart and pole move?”</td></tr>
+<tr><td>Observation model<small>Decoder</small></td><td>Decoder</td><td>Full state (h, z) → predicted image distribution.</td><td>“What picture would this internal situation produce?”</td></tr>
+<tr><td>Reward model<small>Reward predictor</small></td><td>Reward model</td><td>Full state (h, z) → predicted reward distribution.</td><td>“How much task reward would this situation receive?”</td></tr>
+<tr><td>Inference model<small>Posterior / variational encoder</small></td><td>Encoder + posterior net</td><td>Current image and memory h → posterior distribution for z.</td><td>“After looking at the camera, what state am I probably in?”</td></tr>
+</tbody></table></div>
+<div class="callout"><strong>Encoder and observation model run in opposite directions.</strong><br>Encoder: image → useful features for state inference.<br>Observation model / decoder: internal state → predicted image.</div>
+<p>The reward model learns to predict the reward supplied by the task. It does not invent the goal, and it does not choose the action. PlaNet’s planner chooses actions using its reward predictions.</p>
+<p>A reconstruction describes the <strong>same time step</strong> as the decoded state. If you decode an imagined future state, it becomes a future-image prediction. PlaNet normally skips that decoding during planning because rewards can be predicted directly from the latent state.</p>
+<p class="formula">h<sub>t</sub> = f(h<sub>t−1</sub>, z<sub>t−1</sub>, a<sub>t−1</sub>)<br>Prior: p(z<sub>t</sub> | h<sub>t</sub>) &nbsp; · &nbsp; Posterior: q(z<sub>t</sub> | h<sub>t</sub>, o<sub>t</sub>)<br>Observation: p(o<sub>t</sub> | h<sub>t</sub>, z<sub>t</sub>) &nbsp; · &nbsp; Reward: p(r<sub>t</sub> | h<sub>t</sub>, z<sub>t</sub>)</p>
+<p class="small">Read “|” as “given.” The prior is a prediction before using the current observation; the posterior is an observation-informed estimate. Both are learned distributions, not two separate copies of the true environment state.</p>
+</section>
+
+<section class="section" id="learning">
+<h2>How RSSM learns from real experience</h2>
+<p>PlaNet stores sequences of images, actions, and rewards. It samples short sequences from that dataset and processes them in time order. In each step:</p>
+<div class="step"><span class="step-number">1</span><p><strong>Remember the past.</strong> Update h using the previous h, the previous sampled z, and the recorded action.</p></div>
+<div class="step"><span class="step-number">2</span><p><strong>Predict before looking.</strong> The prior estimates a distribution for z from h alone.</p></div>
+<div class="step"><span class="step-number">3</span><p><strong>Use the image.</strong> The encoder extracts image features, and the posterior uses those features together with h to estimate z. Sample the state from this posterior while processing observed data.</p></div>
+<div class="step"><span class="step-number">4</span><p><strong>Check the predictions.</strong> Decode (h, z) to reconstruct the image and predict the reward. Compare those outputs with the recorded image and reward.</p></div>
+<div class="step"><span class="step-number">5</span><p><strong>Connect seeing with predicting.</strong> A KL divergence compares the posterior q with the prior p. This teaches the prior to predict useful states without the image and regularizes the inferred representation so it remains predictable.</p></div>
+<p class="formula">Training loss ≈ image reconstruction error + reward prediction error + KL(q || p)</p>
+<p>This is the paper’s variational learning objective in plain language. The neural components are optimized together by gradient-based learning. The posterior is a learned estimate, not a ground-truth state label.</p>
+<p>In the cart example, suppose memory alone predicts that the pole is still moving left, but the next image provides evidence that it has changed direction. The observation-informed state helps expose that prediction error. Repeating this across many sequences improves both state estimation and dynamics prediction.</p>
+<p class="small">The original implementation uses Gaussian output distributions. Image and reward negative log-likelihoods correspond to squared-error losses up to constants when variance is fixed. It also uses a “free nats” threshold on KL; that is an optimization detail, not an extra model box.</p>
+<p class="source">Source: <a href="https://arxiv.org/pdf/1811.04551#page=4">PlaNet §3, training objective and Eq. 4</a>; Appendix A.</p>
+</section>
+
+<section class="section" id="planning">
+<h2>How PlaNet turns predictions into an action</h2>
+<p>RSSM supplies the simulator. <strong>PlaNet</strong> adds the data-collection, model-training, and action-planning loop. It uses <strong>CEM</strong>, the cross-entropy method, to search for promising action sequences.</p>
+<div class="plain-flow"><b>Observe</b><span>→</span><b>Infer current state</b><span>→</span><b>Imagine action sequences</b><span>→</span><b>Compare rewards</b><span>→</span><b>Act and observe again</b></div>
+<ol>
+<li><strong>Estimate the current state</strong> using the real observation and the posterior.</li>
+<li><strong>Sample many candidate action sequences.</strong> For the cart, each is a possible series of left/right forces.</li>
+<li><strong>Imagine each sequence.</strong> Repeatedly update memory, sample the next stochastic state from the prior, and predict reward. No future camera images are available.</li>
+<li><strong>Score and refine.</strong> Sum the predicted rewards along each sequence, keep the better candidates, and adjust the action-sampling distribution toward them. Repeat this search a few times.</li>
+<li><strong>Execute only the current action from the resulting plan.</strong> After the next real observation arrives, update the state and plan again. The paper takes the current action from the mean of the final CEM distribution.</li>
+</ol>
+<p>Replanning helps the agent respond when reality differs from its predictions. This is called <strong>model-predictive control</strong>.</p>
+<div class="callout"><strong>Imagining does not require drawing imaginary pictures.</strong> Each rollout can stay in the compact latent state and predict rewards directly. That makes it practical to compare many action sequences.</div>
+<p>The outer learning loop starts with a small dataset collected using random actions. PlaNet alternates between fitting its model and collecting more experience with its improving planner. Exploration noise is added during collection.</p>
+<p class="source">Source: <a href="https://arxiv.org/pdf/1811.04551#page=2">PlaNet §2, Algorithm 1</a>; <a href="https://arxiv.org/pdf/1811.04551#page=3">CEM and latent-space planning</a>; Appendix B.</p>
+</section>
+
+<section class="section" id="paper">
+<h2>The whole paper, in everyday language</h2>
+<div class="paper-grid">
+<article><h3>1 · The problem</h3><p>Can an agent learn to control an unfamiliar environment using images, without already knowing its physics? Learning by real trial and error can require many interactions. A learned simulator could let the agent try possibilities internally.</p></article>
+<article><h3>2 · The proposed agent: PlaNet</h3><p>Learn compact dynamics from experience and plan directly in that compact space. Train the model, collect new experience using planning, then train again. The agent has no actor or critic network.</p></article>
+<article><h3>3 · The proposed dynamics: RSSM</h3><p>Use both recurrent memory and stochastic states. A purely recurrent model does not explicitly represent different possible futures; a purely stochastic state model can struggle to preserve information over time. The combination worked better in the paper’s experiments.</p></article>
+<article><h3>4 · A training idea: latent overshooting</h3><p>A good one-step prediction does not guarantee a good long rollout when model capacity is limited. Predict several steps ahead and compare the predicted latent distributions with the corresponding future posteriors inferred from observations. This adds supervision without decoding every future image.</p><p><strong>Caveat:</strong> it helped some models, but was unnecessary for the final RSSM agent and slightly reduced RSSM performance in the reported comparison.</p></article>
+<article><h3>5 · What the experiments show</h3><p>PlaNet was evaluated on six simulated continuous-control tasks: cart-pole swing-up, reaching, cheetah running, finger spinning, catching a ball in a cup, and walking. The results support combining deterministic and stochastic state components and refining plans with CEM.</p><p>PlaNet after 500 episodes achieved broadly similar performance to the D4PG baseline trained for 100,000 episodes, except on the finger task. The paper describes this as about 200 times fewer episodes.</p></article>
+<article><h3>6 · What to take from the result</h3><p>A learned model can provide useful predictions for planning without perfectly recreating the world. The evidence is from the paper’s simulated tasks; it does not establish the same efficiency gain for every environment. Model errors, incomplete observations, and unfamiliar situations still matter.</p></article>
+</div>
+<p class="source">Sources: <a href="https://arxiv.org/pdf/1811.04551">PlaNet paper</a>, §§1–5; Appendix A; Appendix D and Fig. 7 for the overshooting caveat.</p>
+</section>
+
+<section class="section" id="dreamer">
+<h2>Where Dreamer fits</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>PlaNet in this paper</th><th>DreamerV3</th></tr></thead><tbody>
+<tr><td>Dynamics architecture</td><td>RSSM</td><td>An updated RSSM-based world model</td></tr>
+<tr><td>State uncertainty</td><td>Gaussian stochastic states</td><td>Categorical stochastic representations</td></tr>
+<tr><td>Action selection</td><td>CEM searches action sequences at decision time.</td><td>A learned actor chooses actions; actor–critic learning uses imagined experience.</td></tr>
+<tr><td>Prediction heads</td><td>Observation and reward models</td><td>Observation, reward, and continuation models</td></tr>
+</tbody></table></div>
+<p style="margin-top:18px">Your upper diagram shows the shared world-model idea, with some later Dreamer choices included. To understand the original RSSM/PlaNet paper, follow its recurrent model, prior, posterior, decoder, and reward predictor, then connect them to <strong>CEM planning</strong>.</p>
+<p class="source">Sources: <a href="https://arxiv.org/pdf/1811.04551">PlaNet</a>; <a href="https://arxiv.org/html/2301.04104v2">DreamerV3</a>.</p>
+</section>
+<footer class="footer">Prepared from the original papers and your supplied diagram. Examples describe intuition; internal latent coordinates are learned and need not correspond to named physical quantities. <button class="print-button" type="button" onclick="window.print()">Print / save as PDF</button></footer>
+</main>
+<script>
+const modules={
+transition:["Transition: the internal simulator","In RSSM, the transition has two parts: the recurrent model updates memory from the previous memory, stochastic state, and action; the prior net predicts a distribution over the new stochastic state. Together they describe what might happen after an action."],
+memory:["Recurrent model: carry useful history forward","The GRU is the recurrent network used in the paper. It computes hₜ = f(hₜ₋₁, zₜ₋₁, aₜ₋₁). That same update happens during observation and imagination. A new real image does not go directly into this update; it affects the sampled posterior state and therefore later memory updates."],
+prior:["Prior: predict without the new image","The prior p(zₜ | hₜ) is a learned distribution over the stochastic state. It uses memory alone; actions and earlier information have already influenced that memory. During imagined rollouts, sample z from this prior. During model training, compare it with the posterior using KL."],
+encoder:["Encoder: turn the image into useful features","The image encoder extracts features from pixels. These features enter the posterior network together with recurrent memory. This is different from the observation model: the observation model is the decoder that maps a full latent state back to an image."],
+posterior:["Posterior: infer the state after looking","The approximate posterior q(zₜ | hₜ, oₜ) combines memory and evidence from the current image. Sample z from it when processing real observations. It is a learned estimate, not the true state. The prior and posterior do not need a direct forward connection to each other; KL compares their distributions during training."],
+state:["Full state: memory plus one sample","The full state is (hₜ, zₜ). When observing, zₜ is sampled from the posterior. When imagining, it is sampled from the prior. Do not concatenate prior and posterior into a single state. Carry this full state forward and use it to predict observations and rewards."],
+heads:["Prediction heads: image and reward","The observation model (decoder) predicts what image the full state would produce. The reward model predicts its task reward. Both use h and z. Reconstruction supplies a rich training signal; CEM planning uses reward predictions and does not need to decode images. The continuation head in your source image is a later Dreamer component."]
+};
+const nodes=[...document.querySelectorAll("[data-module]")];
+function selectModule(name){const m=modules[name];if(!m)return;document.getElementById("module-title").textContent=m[0];document.getElementById("module-text").textContent=m[1];nodes.forEach(n=>n.classList.toggle("selected",name==="transition"?["memory","prior"].includes(n.dataset.module):n.dataset.module===name));document.querySelectorAll("[data-module-button]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.moduleButton===name)));}
+nodes.forEach(n=>{n.addEventListener("click",()=>selectModule(n.dataset.module));n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectModule(n.dataset.module);}})});
+document.querySelectorAll("[data-module-button]").forEach(b=>b.addEventListener("click",()=>selectModule(b.dataset.moduleButton)));
+function setMode(imagine){document.getElementById("rssm-diagram").classList.toggle("imagining",imagine);document.getElementById("observe-button").setAttribute("aria-pressed",String(!imagine));document.getElementById("imagine-button").setAttribute("aria-pressed",String(imagine));document.getElementById("state-source").textContent=imagine?"z sampled from p":"z sampled from q";document.getElementById("mode-note").textContent=imagine?"Without a future image, sample z from the prior p. Update memory on every imagined step. Reward predictions score plans; decoding imagined images is unnecessary.":"With a real image, sample z from the posterior q. The prior p is also computed during training and compared with the posterior through KL divergence.";selectModule(imagine?"prior":"posterior");}
+document.getElementById("observe-button").addEventListener("click",()=>setMode(false));document.getElementById("imagine-button").addEventListener("click",()=>setMode(true));selectModule("transition");
+</script>
+</body></html>
+
+
