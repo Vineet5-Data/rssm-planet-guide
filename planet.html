@@ -10,22 +10,19 @@
 @media(max-width:750px){main{padding:30px 15px}.section{padding:21px 17px;border-radius:13px}.summary,.cols,.paper-grid{grid-template-columns:1fr}.summary{gap:9px}.summary div{padding:14px 17px}h2{font-size:25px}.intro{font-size:19px}.reference-zoom .crop{min-width:900px}th,td{padding:10px 8px}body{font-size:16px}}
 @media print{body{background:white;font-size:11pt}main{max-width:none;padding:0}.toolbar,.module-buttons,.nav,.print-button{display:none}.section{break-inside:avoid;border-radius:0;padding:14px;margin:14px 0}.diagram-scroll svg{min-width:0}.explanation{min-height:0}.crop{min-width:0!important}.summary{grid-template-columns:repeat(3,1fr)}h1{font-size:34pt}.source a{color:inherit}}
 </style>
-</head>
+<link rel="stylesheet" href="guide.css"><link rel="stylesheet" href="paper.css"></head>
 <body>
 <div style="background: #0e1526; color: #cbd5e1; padding: 12px 20px; font-size: 14px; text-align: center; border-bottom: 2px solid #06b6d4; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
   <span>🚀 <strong>AlphaEvolve Research Portal:</strong> Looking for the Fleet GPS, DreamerV3 World Model, Simulator & Math Guide?</span>
   <a href="index.html" style="color: #67e8f9; font-weight: 700; text-decoration: underline; background: rgba(6, 182, 212, 0.15); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.4);">Open AlphaEvolve &amp; DreamerV3 Guide &rarr;</a>
 </div>
 <main>
+<nav class="site-nav" aria-label="Website"><a href="planet.html" aria-current="page">RSSM &amp; PlaNet paper</a><a class="project-button" href="index.html">Project: RL_in_AD</a><a href="index.html#dreamer-rssm">DreamerV3 connection</a></nav>
 <header>
 <div class="eyebrow">A beginner’s guide · based on Hafner et al.</div>
 <h1>RSSM predicts the world.<br>PlaNet uses it to choose actions.</h1>
 <p class="intro">The “transition model,” “observation model,” and “reward model” are learned parts with different jobs. Together, they let an agent build a small internal simulator from experience.</p>
-<div class="summary">
-<div><b>Transition</b><span>What could happen next if I take this action?</span></div>
-<div><b>Observation</b><span>What would that internal state look like as an image?</span></div>
-<div><b>Reward</b><span>What task score should I expect in that state?</span></div>
-</div>
+<div class="table-wrap"><table><thead><tr><th>Component</th><th>Question it answers</th></tr></thead><tbody><tr><td>Transition model</td><td>What could happen next if I take this action?</td></tr><tr><td>Observation model</td><td>What image would the internal state produce?</td></tr><tr><td>Reward model</td><td>What task reward should this state receive?</td></tr></tbody></table></div>
 <nav class="nav" aria-label="Guide contents">
 <a href="#picture">Your picture</a><a href="#state">What is a state?</a><a href="#diagram">Explore RSSM</a><a href="#terms">Model names</a><a href="#learning">How it learns</a><a href="#planning">How it acts</a><a href="#paper">The whole paper</a>
 </nav>
@@ -198,7 +195,7 @@
 </section>
 
 <section class="section" id="dreamer">
-<h2>Where Dreamer fits</h2>
+<h2>Where Dreamer fits</h2><p><strong>DreamerV3 directly uses an RSSM-based world model.</strong> Its actor learns to choose actions and its critic estimates future return. Both learn from imagined trajectories starting at states inferred from real experience. Imagined steps use the prior, while newly observed real steps use the posterior.</p><p>The published DreamerV3 actor loss uses REINFORCE for both discrete and continuous actions. The actor–critic system is part of the complete agent, not an extra part of the RSSM transition itself.</p><p><a href="index.html#dreamer-rssm">See how RL_in_AD adapts these ideas to GPS and road matching →</a></p>
 <div class="table-wrap"><table><thead><tr><th></th><th>PlaNet in this paper</th><th>DreamerV3</th></tr></thead><tbody>
 <tr><td>Dynamics architecture</td><td>RSSM</td><td>An updated RSSM-based world model</td></tr>
 <tr><td>State uncertainty</td><td>Gaussian stochastic states</td><td>Categorical stochastic representations</td></tr>
@@ -228,5 +225,3 @@ function setMode(imagine){document.getElementById("rssm-diagram").classList.togg
 document.getElementById("observe-button").addEventListener("click",()=>setMode(false));document.getElementById("imagine-button").addEventListener("click",()=>setMode(true));selectModule("transition");
 </script>
 </body></html>
-
-
